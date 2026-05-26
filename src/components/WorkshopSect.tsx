@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { ExternalLink, Server, Compass, CheckCircle2, Award, Zap } from 'lucide-react';
 import { projects } from '../data';
 import { Project } from '../types';
@@ -16,6 +17,24 @@ function ProjectCard({ proj, idx }: ProjectCardProps) {
   const [glowX, setGlowX] = useState(50);
   const [glowY, setGlowY] = useState(50);
   const [isHovered, setIsHovered] = useState(false);
+  const [fontSize, setFontSize] = useState<string>('');
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!cardRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        // Dynamically compute optimal font size based on dynamic width boundaries
+        // A wider container (~500px) yields up to 24px, a narrower container (~300px) yields around 16.5px to preserve layout cleanliness
+        const calculatedSize = Math.max(16, Math.min(24, width * 0.045));
+        setFontSize(`${calculatedSize}px`);
+      }
+    });
+
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const card = e.currentTarget;
@@ -54,6 +73,7 @@ function ProjectCard({ proj, idx }: ProjectCardProps) {
 
   return (
     <article
+      ref={cardRef}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -110,14 +130,19 @@ function ProjectCard({ proj, idx }: ProjectCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent z-10 pointer-events-none" />
         
         {proj.imageUrl ? (
-          <img
+          <motion.img
             src={proj.imageUrl}
             alt={`Screenshot preview of ${proj.name} interface`}
             referrerPolicy="no-referrer"
             className="w-[98%] h-[98%] object-contain filter brightness-[1.05] saturate-[1.03] z-0 rounded-lg shadow-2xl"
-            style={{ 
-              transform: isHovered ? 'translateZ(30px) scale(1.05)' : 'translateZ(10px) scale(1)',
-              transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
+            animate={{ 
+              transform: isHovered ? 'translateZ(30px) scale(1.06)' : 'translateZ(10px) scale(1)'
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 240,
+              damping: 15,
+              mass: 0.7
             }}
           />
         ) : (
@@ -141,10 +166,11 @@ function ProjectCard({ proj, idx }: ProjectCardProps) {
         
         <h3 
           id={`project-title-${idx}`} 
-          className="font-display text-xl sm:text-2xl font-black text-white group-hover:text-[#00d1ff] tracking-tight uppercase select-text"
+          className="font-display font-black text-white group-hover:text-[#00d1ff] tracking-tight uppercase select-text"
           style={{
+            fontSize: fontSize || undefined,
             transform: isHovered ? 'translateZ(15px) translateX(6px)' : 'translateZ(0px) translateX(0px)',
-            transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease'
+            transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease, font-size 0.2s cubic-bezier(0.25, 1, 0.5, 1)'
           }}
         >
           {proj.name}

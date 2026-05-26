@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Terminal, ShieldCheck, Compass, Code, Layout, Github, Linkedin, Mail } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
-const ThreeCanvas = dynamic(() => import('./components/ThreeCanvas'), {
+const WaterBackground = dynamic(() => import('./components/WaterBackground'), {
   ssr: false,
 });
 
@@ -25,6 +25,7 @@ export default function App() {
   const [webGlSupported, setWebGlSupported] = useState(true);
 
   // Section Refs for scroll targeting and Intersection Observing
+  const portalRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const journeyRef = useRef<HTMLDivElement>(null);
   const workshopRef = useRef<HTMLDivElement>(null);
@@ -32,7 +33,7 @@ export default function App() {
   const aiCopilotRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
 
-  // Test WebGL tolerance on mount
+  // Track WebGL tolerance on mount
   useEffect(() => {
     try {
       const canvas = document.createElement('canvas');
@@ -47,12 +48,13 @@ export default function App() {
   // Track scroll section entries using standard Intersection Observer
   useEffect(() => {
     const sections = [
-      { ref: heroRef, index: 0 },
-      { ref: journeyRef, index: 1 },
-      { ref: workshopRef, index: 2 },
-      { ref: foundationRef, index: 3 },
-      { ref: aiCopilotRef, index: 4 },
-      { ref: contactRef, index: 5 }
+      { ref: portalRef, index: 0 },
+      { ref: heroRef, index: 1 },
+      { ref: journeyRef, index: 2 },
+      { ref: workshopRef, index: 3 },
+      { ref: foundationRef, index: 4 },
+      { ref: aiCopilotRef, index: 5 },
+      { ref: contactRef, index: 6 }
     ];
 
     const observerOptions = {
@@ -104,41 +106,30 @@ export default function App() {
   };
 
   const navItems = [
-    { label: 'Introduction', index: 0, ref: heroRef },
-    { label: 'Journey Timeline', index: 1, ref: journeyRef },
-    { label: 'Project Workshop', index: 2, ref: workshopRef },
-    { label: 'System Foundation', index: 3, ref: foundationRef },
-    { label: 'AI Co-pilot', index: 4, ref: aiCopilotRef },
-    { label: 'Secure Handshake', index: 5, ref: contactRef }
+    { label: 'Water Portal', index: 0, ref: portalRef },
+    { label: 'Introduction', index: 1, ref: heroRef },
+    { label: 'Journey Timeline', index: 2, ref: journeyRef },
+    { label: 'Project Workshop', index: 3, ref: workshopRef },
+    { label: 'System Foundation', index: 4, ref: foundationRef },
+    { label: 'AI Co-pilot', index: 5, ref: aiCopilotRef },
+    { label: 'Secure Handshake', index: 6, ref: contactRef }
   ];
 
   return (
     <div className="relative bg-[#040406] text-on-background selection:bg-primary-container selection:text-black">
       
-      {/* 3D Tech Grid background exactly mimicking uploaded reference design */}
+      {/* 3D Tech Glow background with grids removed per user request */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         {/* Soft radial atmospheric spotlight glows from Immersive UI theme */}
         <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-[#1a3a3a] rounded-full blur-[140px] opacity-15" />
         <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#00d1ff] rounded-full blur-[150px] opacity-8" />
         <div className="absolute top-[40%] right-[10%] w-[300px] h-[300px] bg-[#7000ff] rounded-full blur-[110px] opacity-10" />
-
-        {/* Glowing perspective digital mesh grid using css rotation tricks */}
-        <div 
-          className="absolute top-0 left-[-50vw] w-[200vw] h-[200vh] pointer-events-none opacity-5 transition-transform duration-1000 ease-out"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(0, 209, 255, 0.02) 1px, transparent 1px), 
-              linear-gradient(90deg, rgba(0, 209, 255, 0.02) 1px, transparent 1px)
-            `,
-            backgroundSize: '80px 80px',
-            transform: `rotateX(60deg) translateY(-140px) translateZ(-400px) rotateY(${mousePos.x * 1.0}deg) rotateX(${60 + mousePos.y * 1.0}deg)`,
-            transformOrigin: 'top center',
-          }}
-        />
       </div>
 
-      {/* Floating Tactical Top Navigation Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-[#050505]/40 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center select-none">
+      {/* Floating Tactical Top Navigation Header - Fades in past portal screen */}
+      <header className={`fixed top-0 left-0 right-0 z-40 bg-[#050505]/40 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center select-none transition-all duration-700 ease-in-out ${
+        activeSection > 0 ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'
+      }`}>
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full border border-[#00d1ff] flex items-center justify-center">
             <div className="w-3.5 h-3.5 bg-[#00d1ff] rounded-sm rotate-45 shadow-[0_0_10px_#00d1ff]"></div>
@@ -168,8 +159,10 @@ export default function App() {
         </div>
       </header>
 
-      {/* Floating Storyline HUD Progress Sidebar Dashboard */}
-      <nav className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col gap-6 select-none bg-[#0f0f0f]/35 backdrop-blur-md p-4 rounded-3xl border border-white/5 shadow-2xl">
+      {/* Floating Storyline HUD Progress Sidebar Dashboard - Fades in past portal screen */}
+      <nav className={`fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col gap-6 select-none bg-[#0f0f0f]/35 backdrop-blur-md p-4 rounded-3xl border border-white/5 shadow-2xl transition-all duration-700 ease-in-out ${
+        activeSection > 0 ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-4 pointer-events-none'
+      }`}>
         {navItems.map((item) => {
           const isActive = activeSection === item.index;
 
@@ -197,19 +190,90 @@ export default function App() {
         })}
       </nav>
 
-      {/* Floating Interactive 3D Canvas running React Three Fiber */}
-      {webGlSupported ? (
-        <ThreeCanvas activeSection={activeSection} mousePos={mousePos} />
-      ) : (
-        // Elegant non-WebGL fallbacks
-        <div className="fixed inset-0 pointer-events-none z-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-gradient-to-tr from-[#00d1ff]/10 to-transparent animate-pulse blur-3xl" />
-        </div>
-      )}
+      {/* Floating Interactive 2D/3D Hybrid Water Ripples Background */}
+      <WaterBackground activeSection={activeSection} />
 
       {/* Main Single Screen Layout Narrative */}
       <main className="relative z-10 w-full overflow-hidden">
-        {/* Section 0: Hero */}
+        
+        {/* Section 0: Immersive Water Portal */}
+        <div 
+          id="portal" 
+          ref={portalRef} 
+          className="h-screen w-full flex flex-col justify-between items-center relative z-20 pt-28 pb-16 px-4 md:px-8 overflow-hidden select-none"
+        >
+          {/* Spacer to shift weights down */}
+          <div />
+
+          {/* Central Elegant Brand Identification */}
+          <div className="flex flex-col items-center text-center">
+            <motion.div
+              initial={{ opacity: 0, y: -25 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+              className="flex items-center gap-3 mb-6"
+            >
+              <div className="w-12 h-12 rounded-full border-2 border-[#00d1ff] flex items-center justify-center animate-pulse">
+                <div className="w-4.5 h-4.5 bg-[#00d1ff] rounded-sm rotate-45 shadow-[0_0_15px_#00d1ff]"></div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="mb-6 space-y-3"
+            >
+              <h2 className="font-mono text-[10px] sm:text-xs text-[#00d1ff] uppercase tracking-[0.45em] animate-pulse font-semibold">
+                Tactical Developer Archive
+              </h2>
+              <h1 className="font-display font-black text-4xl sm:text-5xl md:text-7xl text-white tracking-widest uppercase leading-none">
+                AKSHIT KUMAR DHAKA
+              </h1>
+              <p className="font-mono text-[9px] sm:text-[10px] text-white/40 tracking-[0.2em] uppercase font-light">
+                Systems Engineer &bull; Noida, IN
+              </p>
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.65 }}
+              transition={{ duration: 2.0, delay: 1.0 }}
+              className="font-sans text-xs sm:text-sm text-gray-400 max-w-sm leading-relaxed"
+            >
+              Interactive fluid canvas active. Tap or click anywhere on the dark surface to generate physical wave ripples.
+            </motion.p>
+          </div>
+
+          {/* Bottom Activation Controls: Flow trigger enter + Bounce bounce */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.4, delay: 1.4, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col items-center gap-5"
+          >
+            <button
+              onClick={() => scrollToRef(heroRef)}
+              className="px-6 py-3 bg-[#00d1ff]/10 border border-[#00d1ff]/40 text-xs font-mono text-[#00d1ff] uppercase tracking-[0.25em] hover:bg-[#00d1ff] hover:text-black hover:shadow-[0_0_20px_rgba(0,209,255,0.4)] hover:border-transparent transition-all rounded-none cursor-pointer"
+            >
+              Enter Archive
+            </button>
+            
+            <div 
+              onClick={() => scrollToRef(heroRef)}
+              className="cursor-pointer group flex flex-col items-center gap-2 text-white/30 hover:text-[#00d1ff] transition-colors"
+            >
+              <span className="font-mono text-[8px] uppercase tracking-[0.3em]">Scroll down to enter</span>
+              <motion.div
+                animate={{ y: [0, 6, 0] }}
+                transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
+                className="w-1.5 h-1.5 border-b border-r border-current rotate-45"
+              />
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Section 1: Hero */}
         <div id="hero" ref={heroRef} className="min-h-screen flex items-center justify-center">
           <HeroSect 
             onExplore={() => scrollToRef(journeyRef)} 

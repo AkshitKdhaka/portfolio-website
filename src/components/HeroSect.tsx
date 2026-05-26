@@ -11,8 +11,8 @@ interface HeroProps {
 
 export default function HeroSect({ onExplore, onViewSource }: HeroProps) {
   return (
-    <section className="relative min-h-screen flex flex-col justify-center items-center w-full px-4 sm:px-8 md:px-16 overflow-hidden z-20">
-      <div className="w-full max-w-5xl text-center flex flex-col items-center select-none pt-24 md:pt-12">
+    <section className="relative min-h-screen flex flex-col justify-start items-center w-full px-4 sm:px-8 md:px-16 overflow-hidden z-20 pt-32 sm:pt-40 md:pt-48 pb-12">
+      <div className="w-full max-w-5xl text-center flex flex-col items-center select-none pt-12 md:pt-16">
         
         {/* Animated label */}
         <motion.p

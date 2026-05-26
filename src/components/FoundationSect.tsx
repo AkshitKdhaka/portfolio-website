@@ -5,6 +5,30 @@ import { motion } from 'motion/react';
 import { Code, Server, Database, Cloud, GraduationCap, Award, CheckCircle } from 'lucide-react';
 import { technicalSkills, education, certifications } from '../data';
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 15, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 260,
+      damping: 20,
+    },
+  },
+};
+
 export default function FoundationSect() {
   return (
     <section className="relative py-24 w-full max-w-6xl mx-auto px-4 sm:px-8 z-20">
@@ -41,16 +65,23 @@ export default function FoundationSect() {
             <h3 className="font-display font-semibold text-lg text-white uppercase tracking-wider">Languages</h3>
           </div>
           
-          <div className="flex flex-wrap gap-2.5">
+          <motion.div 
+            className="flex flex-wrap gap-2.5"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+          >
             {technicalSkills.languages.map((lang) => (
-              <span
+              <motion.span
                 key={lang}
-                className="px-3.5 py-1.5 bg-[#151515]/80 border border-white/5 text-xs text-on-surface hover:border-[#00d1ff]/20 rounded-xl font-mono tracking-wider transition-colors"
+                variants={itemVariants}
+                className="px-3.5 py-1.5 bg-[#151515]/80 border border-white/5 text-xs text-on-surface hover:border-[#00d1ff]/20 rounded-xl font-mono tracking-wider transition-colors inline-block"
               >
                 {lang}
-              </span>
+              </motion.span>
             ))}
-          </div>
+          </motion.div>
           
           <p className="font-sans text-xs text-gray-400 mt-8 leading-relaxed">
             Strictly typified implementations using modern TypeScript patterns alongside high performance backend environments.
@@ -66,16 +97,23 @@ export default function FoundationSect() {
             <h3 className="font-display font-semibold text-lg text-white uppercase tracking-wider">Frameworks & Tooling</h3>
           </div>
           
-          <div className="flex flex-wrap gap-2.5">
+          <motion.div 
+            className="flex flex-wrap gap-2.5"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+          >
             {technicalSkills.frameworks_and_tools.map((fwork) => (
-              <span
+              <motion.span
                 key={fwork}
-                className="px-3.5 py-1.5 bg-[#151515]/80 border border-white/5 text-xs text-on-surface hover:border-[#00d1ff]/20 rounded-xl font-mono tracking-wider transition-colors"
+                variants={itemVariants}
+                className="px-3.5 py-1.5 bg-[#151515]/80 border border-white/5 text-xs text-on-surface hover:border-[#00d1ff]/20 rounded-xl font-mono tracking-wider transition-colors inline-block"
               >
                 {fwork}
-              </span>
+              </motion.span>
             ))}
-          </div>
+          </motion.div>
 
           <p className="font-sans text-xs text-gray-400 mt-8 leading-relaxed">
             Deep alignment with static generation methodologies (SSG, SSR), optimized modular react trees, state managers, and component styles.
@@ -118,16 +156,23 @@ export default function FoundationSect() {
             <h3 className="font-display font-semibold text-lg text-white uppercase tracking-wider">Ops & Environment</h3>
           </div>
 
-          <div className="flex flex-wrap gap-2.5">
+          <motion.div 
+            className="flex flex-wrap gap-2.5"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+          >
             {technicalSkills.devops_and_cloud.map((cloud) => (
-              <span
+              <motion.span
                 key={cloud}
-                className="px-3.5 py-1.5 bg-[#151515]/80 border border-white/5 text-xs text-on-surface hover:border-[#00d1ff]/20 rounded-xl font-mono tracking-wider transition-colors"
+                variants={itemVariants}
+                className="px-3.5 py-1.5 bg-[#151515]/80 border border-white/5 text-xs text-on-surface hover:border-[#00d1ff]/20 rounded-xl font-mono tracking-wider transition-colors inline-block"
               >
                 {cloud}
-              </span>
+              </motion.span>
             ))}
-          </div>
+          </motion.div>
 
           <p className="font-sans text-xs text-gray-400 mt-6 leading-relaxed">
             Deploying updates on standalone environments, secure certificates setups (Certbot), robust reverse proxy routes, and CI/CD pipelines.
