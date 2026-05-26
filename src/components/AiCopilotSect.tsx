@@ -1,0 +1,546 @@
+'use client';
+
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Bot, 
+  Sparkles, 
+  Send, 
+  Cpu, 
+  FileText, 
+  Layers, 
+  Server, 
+  AlertTriangle, 
+  Terminal, 
+  ChevronRight, 
+  CheckCircle,
+  HelpCircle,
+  Code,
+  ArrowRight
+} from 'lucide-react';
+import { projects } from '../data';
+
+interface ChatMessage {
+  sender: 'user' | 'ai';
+  text: string;
+}
+
+export default function AiCopilotSect() {
+  const [activeSubTab, setActiveSubTab] = useState<'chat' | 'tailor' | 'architecture'>('chat');
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // 1. Recruiter Companion AI Chat State
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      sender: 'ai',
+      text: "Hello! I am Akshit's AI Recruiter Companion. Ask me anything about his full-stack expertise, architectural projects, or AWS deployments, or select one of the quick inquiries below."
+    }
+  ]);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const quickInquiries = [
+    "Does Akshit have production Next.js experience?",
+    "Explain his DevOps & AWS architecture setup",
+    "What databases is he proficient with?",
+    "Show his academic metrics and certifications"
+  ];
+
+  // 2. Resume Tailoring State
+  const [jobDescriptionInput, setJobDescriptionInput] = useState('');
+  const [tailorResult, setTailorResult] = useState<string | null>(null);
+
+  const mockJobDescriptions = [
+    {
+      title: "Senior SDE - Tedekstra Competitor",
+      content: "Looking for a seasoned Full Stack Developer with heavy hands-on experience in Next.js Server Components, NestJS, Prisma databases tuning, Nginx proxies, PM2 server management, and deploying CI/CD workflows on AWS Web Services."
+    },
+    {
+      title: "React & Node Developer - Fintech",
+      content: "Acquiring a frontend-heavy Software Engineer with Node.js chops. Must write scalable React/Next.js client models, optimize Lighthouse accessibility scores, integrate Firebase Auth systems, and work meticulously under Agile environments."
+    }
+  ];
+
+  // 3. Architecture Explainer State
+  const [selectedProject, setSelectedProject] = useState(projects[0]?.name || 'Global News Live');
+  const [architectureQueryGroup, setArchitectureQueryGroup] = useState<string>('scale');
+  const [explainResult, setExplainResult] = useState<string | null>(null);
+
+  const archQueries = [
+    { id: 'scale', label: "How would you scale this to 10M page views?", query: "How would you design a scalable microservices topology for this project on AWS with Redis caching and global load balancing?" },
+    { id: 'security', label: "What cloud security auditing is required?", query: "Provide a detailed security audit blueprint for this project covering SSL/TLS, database encryption, environment config protection, and API gateways." },
+    { id: 'db', label: "Design a distributed database architecture", query: "Sketch out a resilient, high-availability replication design for the database backplane of this project, minimizing failover times." }
+  ];
+
+  // Scroll chat to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, loading]);
+
+  // Execute Gemini REST call Helper
+  const handleGeminiCall = async (action: string, payload: any) => {
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, payload })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Server-side processing failure');
+      }
+      return data.text;
+    } catch (err: any) {
+      console.error(err);
+      setErrorMessage(err.message || 'Connecting to Gemini Companion timed out.');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Submit Recruiter Chat Input
+  const handleSendChat = async (textToSend?: string) => {
+    const messageText = textToSend || chatInput;
+    if (!messageText.trim() || loading) return;
+
+    // Append user message with explicit sender types
+    const newMessages: ChatMessage[] = [...chatMessages, { sender: 'user' as const, text: messageText }];
+    setChatMessages(newMessages);
+    if (!textToSend) setChatInput('');
+
+    const aiResponse = await handleGeminiCall('chat', {
+      userMessage: messageText,
+      chatHistory: chatMessages
+    });
+
+    if (aiResponse) {
+      setChatMessages(prev => [...prev, { sender: 'ai' as const, text: aiResponse }]);
+    }
+  };
+
+  // Perform Resume Tailoring
+  const handleTailorResume = async () => {
+    if (!jobDescriptionInput.trim() || loading) return;
+    const result = await handleGeminiCall('tailor', {
+      jobDescription: jobDescriptionInput
+    });
+    if (result) {
+      setTailorResult(result);
+    }
+  };
+
+  // Perform Architecture Explanation Routing
+  const handleExplainArchitecture = async () => {
+    if (loading) return;
+    const activeQueryObj = archQueries.find(q => q.id === architectureQueryGroup);
+    const queryText = activeQueryObj ? activeQueryObj.query : "Explain scaling";
+    
+    const result = await handleGeminiCall('explain', {
+      projectName: selectedProject,
+      architectureQuery: queryText
+    });
+    if (result) {
+      setExplainResult(result);
+    }
+  };
+
+  return (
+    <section className="relative py-24 w-full max-w-6xl mx-auto px-4 sm:px-8 z-20">
+      
+      {/* Narrative Section Header */}
+      <div className="mb-14 flex flex-col items-center text-center">
+        <div className="font-mono text-xs text-[#00d1ff] tracking-[0.4em] uppercase mb-3">
+          // CO-PILOT TERMINAL
+        </div>
+        <h2 className="font-display text-4xl sm:text-5xl font-black text-white uppercase tracking-wider">
+          AI RECRUITER SUITE
+        </h2>
+        <p className="font-sans text-base sm:text-lg text-gray-400 max-w-2xl mt-4">
+          Unleash autonomous co-pilot features powered by Gemini to chat with my background agents, customize resumes to your requirements instantly, and inspect architectural diagrams.
+        </p>
+        <div className="w-16 h-1 bg-[#00d1ff] mt-6 rounded-full shadow-[0_0_15px_rgba(0,209,255,0.6)]"></div>
+      </div>
+
+      {/* Feature Navigation Tabs */}
+      <div className="flex flex-wrap justify-center gap-3 mb-12">
+        <button
+          onClick={() => { setActiveSubTab('chat'); setErrorMessage(null); }}
+          className={`flex items-center gap-2 px-5 py-3 transition-all rounded-lg font-mono text-xs uppercase tracking-wider ${
+            activeSubTab === 'chat'
+              ? 'bg-[#00d1ff]/15 border border-[#00d1ff] text-[#00d1ff] shadow-[0_0_15px_rgba(0,209,255,0.15)]'
+              : 'bg-[#121212]/50 border border-white/5 text-gray-400 hover:border-white/10 hover:text-white'
+          }`}
+        >
+          <Bot className="w-4 h-4" />
+          Recruiter Copilot
+        </button>
+
+        <button
+          onClick={() => { setActiveSubTab('tailor'); setErrorMessage(null); }}
+          className={`flex items-center gap-2 px-5 py-3 transition-all rounded-lg font-mono text-xs uppercase tracking-wider ${
+            activeSubTab === 'tailor'
+              ? 'bg-[#00d1ff]/15 border border-[#00d1ff] text-[#00d1ff] shadow-[0_0_15px_rgba(0,209,255,0.15)]'
+              : 'bg-[#121212]/50 border border-white/5 text-gray-400 hover:border-white/10 hover:text-white'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          Resume Tailoring
+        </button>
+
+        <button
+          onClick={() => { setActiveSubTab('architecture'); setErrorMessage(null); }}
+          className={`flex items-center gap-2 px-5 py-3 transition-all rounded-lg font-mono text-xs uppercase tracking-wider ${
+            activeSubTab === 'architecture'
+              ? 'bg-[#00d1ff]/15 border border-[#00d1ff] text-[#00d1ff] shadow-[0_0_15px_rgba(0,209,255,0.15)]'
+              : 'bg-[#121212]/50 border border-white/5 text-gray-400 hover:border-white/10 hover:text-white'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          System Explainer
+        </button>
+      </div>
+
+      {/* Display warnings if backend credentials are missing */}
+      <AnimatePresence>
+        {errorMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-8 p-4 bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-lg flex items-start gap-3"
+          >
+            <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5 text-yellow-400 animate-pulse" />
+            <div>
+              <span className="font-semibold block font-mono text-xs uppercase tracking-wider">CONNECTION COMPROMISED</span>
+              <p className="text-sm text-yellow-200/80 mt-1">{errorMessage}</p>
+              <p className="text-xs text-yellow-300/60 mt-2 font-mono">
+                Hint: Check if process.env.GEMINI_API_KEY is configured correctly under Settings &gt; Secrets in AI Studio.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Feature Panel Wrapper */}
+      <div className="bg-[#0a0a0d] border border-white/10 p-6 sm:p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none border-t border-r border-[#00d1ff]/10 rounded-tr-2xl" />
+
+        {/* TAB 1: RECRUITER COMPANION (CHAT AGENT) */}
+        {activeSubTab === 'chat' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <div className="flex items-center gap-3">
+                <Terminal className="w-5 h-5 text-[#00d1ff]" />
+                <div>
+                  <h3 className="font-display font-bold text-lg text-white uppercase tracking-wider">AI Hiring Assistant</h3>
+                  <span className="font-mono text-[10px] text-gray-500 uppercase">SYS.AGENT // ONLINE</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#00d1ff] animate-pulse" />
+                <span className="font-mono text-[9px] text-[#00d1ff] uppercase">Channel Safe</span>
+              </div>
+            </div>
+
+            {/* Chat Messages Feed */}
+            <div className="h-[360px] overflow-y-auto bg-[#0a0a0a]/80 border border-white/5 rounded-xl p-4 space-y-4 font-sans text-sm block">
+              {chatMessages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[85%] rounded-xl px-4 py-3 leading-relaxed whitespace-pre-wrap ${
+                      msg.sender === 'user'
+                        ? 'bg-[#00d1ff]/15 border border-[#00d1ff]/30 text-white font-medium'
+                        : 'bg-white/5 border border-white/10 text-gray-300'
+                    }`}
+                  >
+                    {msg.sender === 'ai' && (
+                      <div className="flex items-center gap-1.5 mb-1.5 font-mono text-[10px] text-[#00d1ff] tracking-wider uppercase">
+                        <Bot className="w-3.5 h-3.5" />
+                        Companion Agent
+                      </div>
+                    )}
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+
+              {loading && (
+                <div className="flex justify-start">
+                  <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-center gap-3">
+                    <div className="flex space-x-1.5">
+                      <div className="w-2 h-2 bg-[#00d1ff] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                      <div className="w-2 h-2 bg-[#00d1ff] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                      <div className="w-2 h-2 bg-[#00d1ff] rounded-full animate-bounce" />
+                    </div>
+                    <span className="font-mono text-xs text-gray-400 uppercase tracking-widest">Compiling background facts...</span>
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Quick Prompts Helper Panel */}
+            <div className="space-y-2">
+              <span className="font-mono text-[9px] text-gray-500 uppercase">Interactive Quick Enquiries:</span>
+              <div className="flex flex-wrap gap-2.5">
+                {quickInquiries.map((promptText, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSendChat(promptText)}
+                    disabled={loading}
+                    className="px-3.5 py-2 bg-[#141414]/90 hover:bg-[#00d1ff]/10 hover:border-[#00d1ff]/30 text-xs font-sans text-gray-400 hover:text-white border border-white/5 rounded-lg text-left transition-all duration-300 cursor-pointer disabled:opacity-50"
+                  >
+                    {promptText}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Input Form */}
+            <div className="flex gap-2.5">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
+                placeholder="Ask Akshit's co-pilot anything about his capabilities or custom projects..."
+                disabled={loading}
+                className="flex-1 bg-[#0c0c0c] border border-white/10 rounded-lg px-4 py-3 font-sans text-xs sm:text-sm text-white focus:outline-none focus:border-[#00d1ff] focus:ring-1 focus:ring-[#00d1ff]/20 placeholder-gray-500 transition-all"
+              />
+              <button
+                onClick={() => handleSendChat()}
+                disabled={loading || !chatInput.trim()}
+                className="px-5 py-3 h-full bg-[#00d1ff] text-black font-semibold uppercase tracking-wider font-mono text-xs rounded-lg hover:shadow-[0_0_15px_#00d1ff] transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:shadow-none cursor-pointer"
+              >
+                Send
+                <Send className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: RESUME TAILORING */}
+        {activeSubTab === 'tailor' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-4 gap-4">
+              <div className="flex items-center gap-3">
+                <FileText className="w-5 h-5 text-[#00d1ff]" />
+                <div>
+                  <h3 className="font-display font-bold text-lg text-white uppercase tracking-wider">Job Matching & Targeting Analyzer</h3>
+                  <span className="font-mono text-[10px] text-gray-500 uppercase">SYS.OPTIMIZER // COMPILE ENGINE</span>
+                </div>
+              </div>
+              <span className="font-mono text-[9px] px-2.5 py-1 bg-white/5 border border-white/5 text-gray-300 uppercase shrink-0 self-start sm:self-auto">
+                Next-Gen Align Analysis
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              {/* Left Column Input */}
+              <div className="md:col-span-5 space-y-4">
+                <span className="font-mono text-xs text-white/70 block uppercase tracking-wider">
+                  Target Job Description Text
+                </span>
+                
+                <textarea
+                  value={jobDescriptionInput}
+                  onChange={(e) => setJobDescriptionInput(e.target.value)}
+                  placeholder="Paste target SDE/Full Stack job description parameters here..."
+                  rows={8}
+                  className="w-full bg-[#0c0c0c] border border-white/10 rounded-xl p-4 font-sans text-xs sm:text-sm text-white focus:outline-none focus:border-[#00d1ff] focus:ring-1 focus:ring-[#00d1ff]/20 placeholder-gray-500 transition-all resize-none"
+                />
+
+                <div className="space-y-2">
+                  <span className="font-mono text-[10px] text-gray-500 uppercase">Load preset test specs:</span>
+                  <div className="flex flex-col gap-2">
+                    {mockJobDescriptions.map((desc, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setJobDescriptionInput(desc.content)}
+                        className="px-3 py-2 bg-[#121212]/80 hover:bg-white/5 text-xs text-left text-gray-400 hover:text-white border border-white/5 rounded-lg font-mono transition-colors"
+                      >
+                        ⚡ {desc.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleTailorResume}
+                  disabled={loading || !jobDescriptionInput.trim()}
+                  className="w-full py-3.5 bg-[#00d1ff] text-black font-semibold uppercase tracking-widest font-mono text-xs rounded-xl hover:shadow-[0_0_15px_#00d1ff] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none cursor-pointer"
+                >
+                  {loading ? (
+                    <>
+                      <Cpu className="w-4 h-4 animate-spin" />
+                      COMPILING DIRECT ALIGNMENT...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      TAILOR & REPORT METRICS
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Right Column Output Preview */}
+              <div className="md:col-span-7 bg-[#0a0a0a]/80 border border-white/5 rounded-xl p-6 min-h-[340px] flex flex-col justify-between relative">
+                
+                {tailorResult ? (
+                  <div className="space-y-4 font-sans text-sm text-gray-300 select-text overflow-y-auto max-h-[380px] pr-2">
+                    <div className="flex items-center gap-2 border-b border-white/5 pb-2.5 mb-2.5">
+                      <CheckCircle className="w-4 h-4 text-green-400" />
+                      <span className="font-mono text-xs text-green-400 uppercase tracking-widest font-semibold">ALIGMENT ANALYSIS LOG EXPORTED</span>
+                    </div>
+                    <div className="whitespace-pre-wrap leading-relaxed text-xs sm:text-sm space-y-4 text-white/95">
+                      {tailorResult}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-center py-12 flex-1">
+                    <FileText className="w-12 h-12 text-white/10 mb-4 animate-pulse" />
+                    <span className="font-mono text-xs text-gray-500 uppercase">
+                      No report compiled of current alignments
+                    </span>
+                    <p className="font-sans text-xs text-gray-600 max-w-sm mt-2">
+                      Paste a target description on the left panel and initiate compilation to retrieve matching alignments and custom resumes.
+                    </p>
+                  </div>
+                )}
+
+                {loading && (
+                  <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-3">
+                    <Cpu className="w-8 h-8 text-[#00d1ff] animate-spin" />
+                    <span className="font-mono text-xs text-[#00d1ff] uppercase tracking-widest">Compiler working on resume vectors...</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: ARCHITECTURE EXPLaINER */}
+        {activeSubTab === 'architecture' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-4 gap-4">
+              <div className="flex items-center gap-3">
+                <Layers className="w-5 h-5 text-[#00d1ff]" />
+                <div>
+                  <h3 className="font-display font-bold text-lg text-white uppercase tracking-wider">System Architecture Scaling Explainer</h3>
+                  <span className="font-mono text-[10px] text-gray-500 uppercase">SYS.DESIGN // TOPOLOGY CANVAS</span>
+                </div>
+              </div>
+              <span className="font-mono text-[9px] px-2.5 py-1 bg-[#00d1ff]/15 border border-[#00d1ff]/30 text-[#00d1ff] uppercase shrink-0 self-start sm:self-auto">
+                ASCII Topology Generator Included
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Selector project */}
+              <div className="space-y-2">
+                <span className="font-mono text-[10px] text-gray-500 uppercase block">1. Select Portfolio Solution:</span>
+                <select
+                  value={selectedProject}
+                  onChange={(e) => setSelectedProject(e.target.value)}
+                  className="w-full bg-[#0c0c0c] border border-white/10 rounded-lg px-3.5 py-2.5 text-xs text-white uppercase tracking-wider font-mono focus:outline-none focus:border-[#00d1ff]"
+                >
+                  {projects.map((proj) => (
+                    <option key={proj.name} value={proj.name} className="bg-black text-gray-300">
+                      {proj.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Selector query challenge */}
+              <div className="md:col-span-2 space-y-2">
+                <span className="font-mono text-[10px] text-gray-500 uppercase block">2. Select Architecture Focus:</span>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  {archQueries.map((q) => (
+                    <button
+                      key={q.id}
+                      onClick={() => setArchitectureQueryGroup(q.id)}
+                      className={`flex-1 px-3 py-2.5 rounded-lg border text-[11px] font-sans tracking-wide text-left transition-all ${
+                        architectureQueryGroup === q.id
+                          ? 'bg-[#00d1ff]/15 border-[#00d1ff]/30 text-white'
+                          : 'bg-[#121212]/80 border-white/5 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {q.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Execute action */}
+              <div className="flex items-end">
+                <button
+                  onClick={handleExplainArchitecture}
+                  disabled={loading}
+                  className="w-full py-2.5 bg-[#00d1ff] text-black font-semibold uppercase tracking-widest font-mono text-xs rounded-lg hover:shadow-[0_0_15px_#00d1ff] transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {loading ? (
+                    <>
+                      <Cpu className="w-3.5 h-3.5 animate-spin" />
+                      ARCHITECTING...
+                    </>
+                  ) : (
+                    <>
+                      Analyze System
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Architecture output canvas */}
+            <div className="border border-white/10 rounded-xl bg-[#090909] p-6 min-h-[300px] relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-2 font-mono text-[8px] text-white/10 uppercase tracking-widest select-none">
+                ASCII Architecture Viewport
+              </div>
+
+              {explainResult ? (
+                <div className="space-y-4 font-sans text-sm text-gray-300 select-text overflow-x-auto">
+                  <span className="font-mono text-[10.5px] text-[#00d1ff] block border-b border-white/5 pb-2 mb-2 uppercase tracking-wide">
+                    // Scaled system design documentation for project: &quot;{selectedProject}&quot;
+                  </span>
+                  <div className="whitespace-pre text-xs font-mono text-[#00ffcc] leading-relaxed bg-[#050505] p-3 rounded-lg border border-white/5 overflow-x-auto shadow-inner">
+                    {/* Render ASCII output or standard architecture response in monospace */}
+                    {explainResult}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center py-12">
+                  <Layers className="w-12 h-12 text-white/5 mb-4 animate-pulse" />
+                  <span className="font-mono text-xs text-gray-500 uppercase">
+                    Architecture Output Screen is Clear
+                  </span>
+                  <p className="font-sans text-xs text-gray-600 max-w-sm mt-2">
+                    Inquire scalings, replicas, failover pipelines, or cloud layout validations. Gemini will draw dynamic ASCII systems maps and output blueprints here.
+                  </p>
+                </div>
+              )}
+
+              {loading && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
+                  <Cpu className="w-8 h-8 text-[#00d1ff] animate-spin" />
+                  <span className="font-mono text-xs text-[#00d1ff] uppercase tracking-widest">Generating system configurations...</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+    </section>
+  );
+}

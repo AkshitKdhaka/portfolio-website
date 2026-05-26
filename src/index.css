@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@400;600;700&family=Geist:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Montserrat', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --color-background: #050505;
+  --color-on-background: #e2e8f0;
+  --color-surface: #050505;
+  --color-surface-dim: #050505;
+  --color-surface-bright: #1c1c1c;
+  --color-surface-container-lowest: #020202;
+  --color-surface-container-low: #080808;
+  --color-surface-container: #0f0f0f;
+  --color-surface-container-high: #151515;
+  --color-surface-container-highest: #1f1f1f;
+  --color-on-surface: #f1f5f9;
+  --color-on-surface-variant: #94a3b8;
+  --color-inverse-surface: #f1f5f9;
+  --color-inverse-on-surface: #0f172a;
+  --color-outline: #64748b;
+  --color-outline-variant: #334155;
+  --color-surface-tint: #00d1ff;
+  --color-primary: #e0f7ff;
+  --color-on-primary: #003543;
+  --color-primary-container: #00d1ff;
+  --color-on-primary-container: #005662;
+  --color-secondary: #c8c6c7;
+  --color-on-secondary: #313031;
+  --color-secondary-container: #4a494a;
+  --color-on-secondary-container: #bab8b9;
+  --color-tertiary: #f8f4fa;
+  --color-on-tertiary: #303034;
+  --color-tertiary-container: #dbd8de;
+  --color-on-tertiary-container: #5f5e63;
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+}
+
+/* Custom CSS Scroll styling and custom animations */
+html, body {
+  background-color: #050505;
+  color: #e2e8f0;
+  font-family: 'Inter', sans-serif;
+  scroll-behavior: smooth;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020202;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #151515;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00d1ff;
+}
+
+/* Floating animation */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(12px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Glow animation for primary container elements */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
+  50% { box-shadow: 0 0 30px rgba(0, 240, 255, 0.6); }
+}
+
+.glow-heavy {
+  animation: glow-pulse 3s infinite;
+}
+
