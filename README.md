@@ -6,8 +6,8 @@ An immersive, production-grade, full-stack 3D vertical scrolling portfolio narra
 
 ## 🚀 Live Environment & Deployments
 
-- **Development URL:** 
-- **Shared Production URL:** 
+- **Development URL:** [ais-dev-dglmfj3l5orihlk7sj667t-221515204811.asia-southeast1.run.app](https://ais-dev-dglmfj3l5orihlk7sj667t-221515204811.asia-southeast1.run.app)
+- **Shared Production URL:** [ais-pre-dglmfj3l5orihlk7sj667t-221515204811.asia-southeast1.run.app](https://ais-pre-dglmfj3l5orihlk7sj667t-221515204811.asia-southeast1.run.app)
 - **Primary Contact E-mail:** [akshitkumardhaka99@gmail.com](mailto:akshitkumardhaka99@gmail.com)
 
 ---
