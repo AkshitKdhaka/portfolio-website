@@ -1,9 +1,33 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'motion/react';
 import { Briefcase, Calendar, MapPin, CheckCircle, Cpu } from 'lucide-react';
 import { experiences } from '../data';
 import { Experience } from '../types';
+
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
+
+const cardEntryVariants = {
+  hidden: { opacity: 0, y: 35 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 110,
+      damping: 16,
+      mass: 0.8,
+    },
+  },
+};
 
 export default function JourneySect() {
   return (
@@ -27,15 +51,22 @@ export default function JourneySect() {
         {/* Glowing vertical 3D timeline track */}
         <div className="absolute left-2.5 sm:left-8 md:left-1/2 top-4 bottom-4 w-[2px] bg-gradient-to-b from-[#00d1ff]/40 via-[#151515]/10 to-transparent -translate-x-1/2 hidden md:block" />
 
-        <div className="space-y-16">
+        <motion.div 
+          className="space-y-16"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
           {experiences.map((exp: Experience, idx: number) => {
             const isLatest = idx === 0;
             const isLeft = idx % 2 === 0;
 
             return (
-              <div 
+              <motion.div 
                 key={`${exp.company}-${idx}`}
                 className={`relative flex flex-col md:flex-row ${isLeft ? 'md:flex-row-reverse' : ''} justify-between items-stretch w-full`}
+                variants={cardEntryVariants}
               >
                 
                 {/* Meta details column */}
@@ -84,12 +115,15 @@ export default function JourneySect() {
                 </div>
 
                 {/* Content Glass Panel Card */}
-                <div className="w-full md:w-[46%]">
+                <div className="w-full md:w-[46%] pointer-events-auto">
                   <div
-                    className="bg-[#050608] border border-white/15 rounded-xl p-6 sm:p-8 transition-all duration-300 hover:shadow-[0_15px_30px_rgba(0,209,255,0.06)] h-full flex flex-col relative overflow-hidden"
+                    className="relative bg-[#050608] border border-white/15 hover:border-[#00d1ff]/80 focus-within:border-[#00d1ff]/80 rounded-xl p-6 sm:p-8 hover:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] focus-within:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] transition-all duration-300 group h-full flex flex-col overflow-hidden outline-none"
                   >
-                    {/* Visual corner decoration indicating precision */}
-                    <div className="absolute top-0 right-0 w-8 h-8 pointer-events-none border-t border-r border-[#00d1ff]/20 rounded-tr-xl"></div>
+                    {/* Futuristic cyan framing highlights to ground the card visually */}
+                    <div className="absolute top-2 left-2 w-1.5 h-1.5 border-t border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
+                    <div className="absolute top-2 right-2 w-1.5 h-1.5 border-t border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
+                    <div className="absolute bottom-2 left-2 w-1.5 h-1.5 border-b border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
+                    <div className="absolute bottom-2 right-2 w-1.5 h-1.5 border-b border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
                     
                     <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
                       <span className="font-mono text-[10px] text-[#00d1ff] tracking-widest uppercase flex items-center gap-1">
@@ -111,10 +145,10 @@ export default function JourneySect() {
                   </div>
                 </div>
 
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
 
     </section>

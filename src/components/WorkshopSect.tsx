@@ -6,6 +6,29 @@ import { ExternalLink, Server, Compass, CheckCircle2, Award, Zap } from 'lucide-
 import { projects } from '../data';
 import { Project } from '../types';
 
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
+
+const cardEntryVariants = {
+  hidden: { opacity: 0, y: 35 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 110,
+      damping: 16,
+      mass: 0.8,
+    },
+  },
+};
+
 interface ProjectCardProps {
   proj: Project;
   idx: number;
@@ -78,7 +101,7 @@ function ProjectCard({ proj, idx }: ProjectCardProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       aria-labelledby={`project-title-${idx}`}
-      className="relative bg-[#0a0a0d] border border-white/15 hover:border-[#00d1ff]/60 focus-within:border-[#00d1ff]/60 rounded-xl overflow-hidden flex flex-col shadow-2xl hover:shadow-[0_25px_60px_rgba(0,209,255,0.18)] focus-within:shadow-[0_25px_60px_rgba(0,209,255,0.18)] transition-all duration-300 group pointer-events-auto h-full outline-none"
+      className="relative bg-[#0a0a0d] border border-white/15 hover:border-[#00d1ff]/80 focus-within:border-[#00d1ff]/80 rounded-xl overflow-hidden flex flex-col shadow-2xl hover:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] focus-within:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] transition-all duration-300 group pointer-events-auto h-full outline-none"
       style={{
         transform: isHovered 
           ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)` 
@@ -97,6 +120,17 @@ function ProjectCard({ proj, idx }: ProjectCardProps) {
           background: `radial-gradient(circle 320px at ${glowX}% ${glowY}%, rgba(0, 209, 255, 0.22), transparent 85%)`,
         }}
       />
+
+      {/* Subtle high-tech glowing border overlay on hover */}
+      <div 
+        className="absolute inset-0 rounded-xl pointer-events-none z-20 transition-all duration-300 border"
+        style={{
+          borderColor: isHovered ? 'rgba(0, 209, 255, 0.6)' : 'rgba(0, 209, 255, 0)',
+          boxShadow: isHovered 
+            ? '0 0 16px rgba(0, 209, 255, 0.25), inset 0 0 10px rgba(0, 209, 255, 0.12)' 
+            : 'none',
+        }}
+      />
       
       {/* Floating Performance Metric badge with extreme scale depth */}
       {proj.metric && (
@@ -113,10 +147,10 @@ function ProjectCard({ proj, idx }: ProjectCardProps) {
       )}
  
       {/* Futuristic cyan framing highlights to ground the card visually */}
-      <div className="absolute top-2 left-2 w-1.5 h-1.5 border-t border-l border-[#00d1ff]/40 pointer-events-none" aria-hidden="true" />
-      <div className="absolute top-2 right-2 w-1.5 h-1.5 border-t border-r border-[#00d1ff]/40 pointer-events-none" aria-hidden="true" />
-      <div className="absolute bottom-2 left-2 w-1.5 h-1.5 border-b border-l border-[#00d1ff]/40 pointer-events-none" aria-hidden="true" />
-      <div className="absolute bottom-2 right-2 w-1.5 h-1.5 border-b border-r border-[#00d1ff]/40 pointer-events-none" aria-hidden="true" />
+      <div className="absolute top-2 left-2 w-1.5 h-1.5 border-t border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
+      <div className="absolute top-2 right-2 w-1.5 h-1.5 border-t border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
+      <div className="absolute bottom-2 left-2 w-1.5 h-1.5 border-b border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
+      <div className="absolute bottom-2 right-2 w-1.5 h-1.5 border-b border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
  
       {/* Taller Wide aspect-ratio container running object-contain on solid terminal dark backgrounds */}
       {/* This preserves full uncropped content screenshots in gorgeous preview format */}
@@ -130,21 +164,84 @@ function ProjectCard({ proj, idx }: ProjectCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent z-10 pointer-events-none" />
         
         {proj.imageUrl ? (
-          <motion.img
-            src={proj.imageUrl}
-            alt={`Screenshot preview of ${proj.name} interface`}
-            referrerPolicy="no-referrer"
-            className="w-[98%] h-[98%] object-contain filter brightness-[1.05] saturate-[1.03] z-0 rounded-lg shadow-2xl"
-            animate={{ 
-              transform: isHovered ? 'translateZ(30px) scale(1.06)' : 'translateZ(10px) scale(1)'
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 240,
-              damping: 15,
-              mass: 0.7
-            }}
-          />
+          proj.name === "Adaptive Prep Framework" ? (
+            <motion.div
+              className="w-[90%] max-w-[360px] flex flex-col items-center justify-center relative select-none"
+              style={{
+                transformStyle: 'preserve-3d',
+                perspective: '1200px'
+              }}
+              animate={{
+                transform: isHovered 
+                  ? 'translateZ(35px) scale(1.04) rotateX(12deg) rotateY(-5deg)' 
+                  : 'translateZ(10px) scale(1) rotateX(6deg) rotateY(0deg)',
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 220,
+                damping: 14,
+                mass: 0.6
+              }}
+            >
+              {/* Laptop Screen / Lid Bezel */}
+              <div className="w-[100%] aspect-[16/10] bg-[#121319] rounded-xl p-[6px] border border-white/10 shadow-[0_0_25px_rgba(0,209,255,0.18)] relative overflow-hidden flex flex-col">
+                {/* Active Webcam and Green Status Dot */}
+                <div className="absolute top-[2px] left-1/2 -translate-x-1/2 flex items-center gap-[3px] z-30">
+                  <div className="w-1.5 h-1.5 rounded-full bg-black flex items-center justify-center border border-white/5">
+                    <div className="w-[2px] h-[2px] rounded-full bg-cyan-400 opacity-90 shadow-[0_0_2px_#00d1ff]" />
+                  </div>
+                  <div className="w-[2px] h-[2px] rounded-full bg-green-500 opacity-80" />
+                </div>
+
+                {/* Elegant Glass Reflex Sheen overlay */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white-[0.03] to-white/10 pointer-events-none z-20" />
+
+                {/* Actual statistics dashboard screen running inside bezel */}
+                <div className="w-full h-full rounded-lg overflow-hidden bg-[#07080c] relative flex items-center justify-center border border-black/40 shadow-inner">
+                  <img
+                    src={proj.imageUrl}
+                    alt={`${proj.name} statistics dashboard layout inside monitor`}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover filter brightness-[0.95] contrast-[1.1] saturate-[1.12]"
+                  />
+                  
+                  {/* Neon screen edge lighting glow */}
+                  <div className="absolute inset-0 border border-[#00d1ff]/15 rounded-lg pointer-events-none z-10" />
+                </div>
+              </div>
+
+              {/* Laptop Keyboard Base & Hinge */}
+              <div 
+                className="w-[106%] h-[8px] bg-gradient-to-b from-[#1c1e28] to-[#0c0d12] rounded-b-md border-t border-white/20 relative shadow-[0_15px_30px_rgba(0,0,0,0.85)]"
+                style={{
+                  transform: 'translateZ(12px) rotateX(-5deg)',
+                  transformOrigin: 'top center'
+                }}
+              >
+                {/* Visual hinge cover */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70px] h-[3px] bg-black/80 rounded-b-sm border-t border-white/5" />
+                
+                {/* Metallic front notch open indicator and trackpad glow */}
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[55px] h-[1px] bg-[#00d1ff]/50 opacity-80 shadow-[0_-1px_6px_rgba(0,209,255,0.6)]" />
+              </div>
+            </motion.div>
+          ) : (
+            <motion.img
+              src={proj.imageUrl}
+              alt={`Screenshot preview of ${proj.name} interface`}
+              referrerPolicy="no-referrer"
+              className="w-[98%] h-[98%] object-contain z-0 rounded-lg shadow-2xl filter brightness-[1.05] saturate-[1.03]"
+              animate={{ 
+                transform: isHovered ? 'translateZ(30px) scale(1.06)' : 'translateZ(10px) scale(1)'
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 240,
+                damping: 15,
+                mass: 0.7
+              }}
+            />
+          )
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-[#07090f] border border-white/5 rounded-lg">
             <Compass className="w-10 h-10 text-[#00d1ff]/30 animate-spin-slow" aria-hidden="true" />
@@ -279,18 +376,28 @@ export default function WorkshopSect() {
       </div>
 
       {/* 2-column Layout of Projects showing 2 cards in one row on wider screens */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16 pb-12">
+      <motion.div 
+        className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16 pb-12"
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+      >
         {projects.map((proj: Project, idx: number) => {
           return (
-            <div key={proj.name} className="h-full">
+            <motion.div 
+              key={proj.name} 
+              className="h-full"
+              variants={cardEntryVariants}
+            >
               <ProjectCard
                 proj={proj}
                 idx={idx}
               />
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
 
     </section>
   );

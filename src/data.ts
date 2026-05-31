@@ -126,6 +126,7 @@ export const projects: Project[] = [
       "Achieved a 92% student satisfaction rate and a 35% measurable upgrade in state exam readiness benchmarks.",
       "Optimized client response layers to accommodate real-time interactive exam countdowns and responsive graphic score reviews."
     ],
+    imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
     tags: ["React", "JavaScript", "CSS3", "Algorithms", "Adaptive Tech"],
     metric: "35%+",
     metricLabel: "Readiness Lift"

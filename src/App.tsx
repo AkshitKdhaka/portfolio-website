@@ -23,6 +23,10 @@ export default function App() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isSourceOpen, setIsSourceOpen] = useState(false);
   const [webGlSupported, setWebGlSupported] = useState(true);
+  // Permanently force dark mode on mount
+  useEffect(() => {
+    document.documentElement.classList.remove('light');
+  }, []);
 
   // Section Refs for scroll targeting and Intersection Observing
   const portalRef = useRef<HTMLDivElement>(null);
@@ -149,7 +153,7 @@ export default function App() {
           <span className="font-mono text-[9px] text-[#00d1ff] tracking-wider uppercase">Active Dispatch: Noida</span>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex gap-3 sm:gap-4 items-center">
           <button
             onClick={() => setIsSourceOpen(true)}
             className="px-4 py-1.5 bg-[#00d1ff]/10 border border-[#00d1ff]/20 text-xs font-mono text-[#00d1ff] rounded-none hover:bg-[#00d1ff] hover:text-black hover:shadow-[0_0_15px_rgba(0,209,255,0.3)] transition-all cursor-pointer"
