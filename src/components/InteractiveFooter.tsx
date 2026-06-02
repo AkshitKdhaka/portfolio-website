@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Phone, Linkedin, Github, Send, Sparkles, Terminal } from 'lucide-react';
+import { Mail, Phone, Linkedin, Github, Send, Sparkles, Terminal, Copy, Check } from 'lucide-react';
 import { contactInfo, fullName } from '../data';
 
 export default function InteractiveFooter() {
@@ -13,6 +13,15 @@ export default function InteractiveFooter() {
   const [status, setStatus] = useState<'idle' | 'success' | 'compiling'>('idle');
   const [polishing, setPolishing] = useState(false);
   const [polishError, setPolishError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyEmail = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(contactInfo.email);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,15 +90,35 @@ export default function InteractiveFooter() {
           <div className="space-y-4 pt-4">
             <a 
               href={`mailto:${contactInfo.email}`}
-              className="group flex items-center gap-4 bg-[#0a0b0d] border border-white/10 hover:border-[#00d1ff]/40 p-4 rounded-xl transition-all duration-300"
+              className="group flex items-center justify-between bg-[#0a0b0d] border border-white/10 hover:border-[#00d1ff]/40 p-4 rounded-xl transition-all duration-300"
             >
-              <div className="w-10 h-10 rounded-lg bg-[#00d1ff]/10 flex items-center justify-center text-[#00d1ff] group-hover:scale-110 transition-transform">
-                <Mail className="w-5 h-5" />
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-lg bg-[#00d1ff]/10 flex items-center justify-center text-[#00d1ff] group-hover:scale-110 transition-transform">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-mono text-[9px] text-white/40 uppercase block tracking-wider">Secure Email Channel</span>
+                  <span className="font-mono text-sm text-[#00d1ff]">{contactInfo.email}</span>
+                </div>
               </div>
-              <div>
-                <span className="font-mono text-[9px] text-white/40 uppercase block tracking-wider">Secure Email Channel</span>
-                <span className="font-mono text-sm text-[#00d1ff]">{contactInfo.email}</span>
-              </div>
+              <button
+                type="button"
+                onClick={handleCopyEmail}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-[#00d1ff]/10 hover:border-[#00d1ff]/50 hover:text-[#00d1ff] transition-all duration-200 text-[10px] font-mono text-white/60 focus:outline-none"
+                title="Copy email to clipboard"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-[#00d1ff]" />
+                    <span className="text-[#00d1ff] uppercase tracking-wider text-[9px]">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span className="uppercase tracking-wider text-[9px]">Copy</span>
+                  </>
+                )}
+              </button>
             </a>
 
             <a 

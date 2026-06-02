@@ -96,11 +96,14 @@ All Gemini queries are proxied via **server-side routes** under `/src/app/api/ge
 - **🎯 Resume Tailor:** Allows users to paste any raw job requirement statement. The server-side LLM parses the description and isolates matching experience bullet-points from Akshit's dataset, offering strategic interview advice.
 - **☁️ Cloud Architect Deep-Dive:** Interactive architectural validation panel simulating hypothetical workloads (e.g., scaling to 10M page views with Redis caching, writing multi-region failover configurations, or conducting secure SSL/TLS audits).
 
-### 4. 📊 Live GitHub API Telemetry Hub
-Integrated onto the **Foundation** layout bento array, fetching reputation parameters straight from the GitHub Public API:
-- **API Cache Strategy:** Implements `next: { revalidate: 3600 }` to avoid rate limitations on hot refreshes.
-- **Parameters Tracked:** Real-time extraction of public repository counts, total stargazers across projects, follower connections, and custom developer bios.
-- **Graceful Fallbacks:** If the client encounters connection limits, rate throttling, or network drops, a highly detailed fallback mock layer feeds realistic numbers to keep the interface clean and unbroken.
+### 4. 📊 Live GitHub API Telemetry Hub & Dynamic Heatmap Visualizer
+Integrated onto the **Foundation** layout bento array, fetching real-time reputation parameters of Akshit Kumar Dhaka straight from the GitHub Public API and scraping active year contribution metrics:
+- **API Cache Strategy:** Configured with server-side proxy routes using `cache: 'no-store'` and cache-busting search parameters to bypass stale CDN caches on hot refreshes.
+- **Dynamic Multi-Year Heatmap:** A detailed, responsive contribution calendar representing active years 2022 to 2026. Custom controls allow frictionless switching between years.
+- **Month Indicators & Layout Reflows:** Maps absolute calendar days into standard GitHub-style column grids, featuring precise monthly marker alignment (Jan-Dec) with localized formatting.
+- **Cyberpunk Glowing Loading Veil:** When switching years, a beautiful backdrop-blurred loading overlay with neon cyan accents, animated spinner rings, and pulsing active terminal logs is deployed dynamically over the grid space to ensure zero blinking or blank states.
+- **Micro-Animations & Key Synchronization:** Leveraging Framer Motion staggered transition variants. Explicitly bound to the active custom key `key={selectedYear}` to reset and play immersive entrance reveal sweeps upon every year filter update.
+- **Graceful Telemetry Fallbacks:** In case of API rate throttles or network issues, a deterministic fallback scraper algorithm generates realistic and perfectly structured activity blocks to keep the layout complete and operational.
 
 ### 5. 📄 Offline PDF Resume Generation Engine (`src/lib/pdfGenerator.ts`)
 Using the client-side `jspdf` package, clicking the **Download CV** trigger instantly generates a professionally structured, single-page, multi-column executive resume.

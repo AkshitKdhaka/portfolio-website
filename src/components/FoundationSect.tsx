@@ -530,7 +530,25 @@ export default function FoundationSect() {
                   </div>
                 </div>
 
-                <div ref={heatmapContainerRef} className="bg-[#121217]/40 border border-white/5 p-6 rounded-xl hover:border-[#00d1ff]/50 transition-all relative overflow-hidden">
+                <motion.div 
+                  ref={heatmapContainerRef} 
+                  className="bg-[#121217]/40 border border-white/5 p-6 rounded-xl hover:border-[#00d1ff]/50 transition-all relative overflow-hidden"
+                  variants={{
+                    hidden: { opacity: 0, y: 25 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      transition: {
+                        duration: 0.6,
+                        ease: "easeOut",
+                        staggerChildren: 0.005, // smooth cascading stagger to nested children
+                      }
+                    }
+                  }}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-100px" }}
+                >
                   
                   {/* GLOWING NEON CYBERPUNK LOADING OVERLAY */}
                   {refreshing && (
@@ -647,12 +665,14 @@ export default function FoundationSect() {
                                         }
                                       }
                                     }}
+                                    whileHover={{ scale: 1.2, zIndex: 10 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
                                     className={`w-[11px] h-[11px] rounded-sm transition-all duration-200 cursor-pointer relative ${
                                       day.level === 0 ? 'bg-[#151515]/50 border border-white/5 hover:bg-white/10' :
-                                      day.level === 1 ? 'bg-[#00d1ff]/20 border border-[#00d1ff]/10 hover:border-[#00d1ff]/60 hover:scale-110' :
-                                      day.level === 2 ? 'bg-[#00d1ff]/45 border border-[#00d1ff]/20 hover:border-[#00d1ff]/80 hover:scale-110' :
-                                      day.level === 3 ? 'bg-[#00d1ff]/75 border border-[#00d1ff]/40 hover:border-[#00d1ff] hover:scale-110 hover:shadow-[0_0_6px_rgba(0,209,255,0.4)]' :
-                                      'bg-[#00d1ff] border border-white/20 hover:scale-115 hover:shadow-[0_0_10px_#00d1ff] ring-1 ring-[#00d1ff]/30'
+                                      day.level === 1 ? 'bg-[#00d1ff]/20 border border-[#00d1ff]/10 hover:border-[#00d1ff]/60' :
+                                      day.level === 2 ? 'bg-[#00d1ff]/45 border border-[#00d1ff]/20 hover:border-[#00d1ff]/80' :
+                                      day.level === 3 ? 'bg-[#00d1ff]/75 border border-[#00d1ff]/40 hover:border-[#00d1ff] hover:shadow-[0_0_6px_rgba(0,209,255,0.4)]' :
+                                      'bg-[#00d1ff] border border-white/20 hover:shadow-[0_0_10px_#00d1ff] ring-1 ring-[#00d1ff]/30'
                                     }`}
                                     title={`${day.date} : Contribution Tier ${day.level}`}
                                     onMouseEnter={(e) => handleMouseEnter(day, e)}
@@ -710,7 +730,7 @@ export default function FoundationSect() {
                       <div className="w-2 h-2 bg-[#0b0c10] border-r border-b border-[#00d1ff] rotate-45 -mt-1 shadow-[4px_4px_8px_rgba(0,0,0,0.5)]" />
                     </div>
                   )}
-                </div>
+                </motion.div>
 
               </div>
             )}

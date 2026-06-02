@@ -2,7 +2,22 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Terminal, ShieldCheck, Compass, Code, Layout, Github, Linkedin, Mail } from 'lucide-react';
+import { 
+  Terminal, 
+  ShieldCheck, 
+  Compass, 
+  Code, 
+  Layout, 
+  Github, 
+  Linkedin, 
+  Mail,
+  Home,
+  User,
+  History,
+  Briefcase,
+  Layers,
+  Sparkles
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const WaterBackground = dynamic(() => import('./components/WaterBackground'), {
@@ -49,44 +64,50 @@ export default function App() {
     }
   }, []);
 
-  // Track scroll section entries using standard Intersection Observer
+  // Track scroll section entries of the portfolio using a high-precision scroll position calculation
   useEffect(() => {
-    const sections = [
-      { ref: portalRef, index: 0 },
-      { ref: heroRef, index: 1 },
-      { ref: journeyRef, index: 2 },
-      { ref: workshopRef, index: 3 },
-      { ref: foundationRef, index: 4 },
-      { ref: aiCopilotRef, index: 5 },
-      { ref: contactRef, index: 6 }
-    ];
+    const handleScroll = () => {
+      const sections = [
+        { ref: portalRef, index: 0 },
+        { ref: heroRef, index: 1 },
+        { ref: journeyRef, index: 2 },
+        { ref: workshopRef, index: 3 },
+        { ref: foundationRef, index: 4 },
+        { ref: aiCopilotRef, index: 5 },
+        { ref: contactRef, index: 6 }
+      ];
 
-    const observerOptions = {
-      root: null, // viewport
-      threshold: 0.35, // Trigger when 35% of the section is visible
-    };
+      // Absolute bottom of the page edge-case check
+      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 15;
+      if (isAtBottom) {
+        setActiveSection(6);
+        return;
+      }
 
-    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const matching = sections.find(s => s.ref.current === entry.target);
-          if (matching !== undefined) {
-            setActiveSection(matching.index);
+      const viewportHeight = window.innerHeight;
+      const triggerPoint = viewportHeight * 0.45; // 45% trigger line from viewport top
+
+      for (let i = 0; i < sections.length; i++) {
+        const ref = sections[i].ref;
+        if (ref.current) {
+          const rect = ref.current.getBoundingClientRect();
+          if (rect.top <= triggerPoint && rect.bottom >= triggerPoint) {
+            setActiveSection(sections[i].index);
+            break;
           }
         }
-      });
+      }
     };
 
-    const observer = new IntersectionObserver(handleIntersection, observerOptions);
+    // Calculate initial section on component mount
+    handleScroll();
 
-    sections.forEach(({ ref }) => {
-      if (ref.current) observer.observe(ref.current);
-    });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
 
     return () => {
-      sections.forEach(({ ref }) => {
-        if (ref.current) observer.unobserve(ref.current);
-      });
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
     };
   }, []);
 
@@ -110,13 +131,13 @@ export default function App() {
   };
 
   const navItems = [
-    { label: 'Water Portal', index: 0, ref: portalRef },
-    { label: 'Introduction', index: 1, ref: heroRef },
-    { label: 'Journey Timeline', index: 2, ref: journeyRef },
-    { label: 'Project Workshop', index: 3, ref: workshopRef },
-    { label: 'System Foundation', index: 4, ref: foundationRef },
-    { label: 'AI Co-pilot', index: 5, ref: aiCopilotRef },
-    { label: 'Secure Handshake', index: 6, ref: contactRef }
+    { label: 'Water Portal', index: 0, ref: portalRef, icon: Home },
+    { label: 'Introduction', index: 1, ref: heroRef, icon: User },
+    { label: 'Journey Timeline', index: 2, ref: journeyRef, icon: History },
+    { label: 'Project Workshop', index: 3, ref: workshopRef, icon: Briefcase },
+    { label: 'System Foundation', index: 4, ref: foundationRef, icon: Layers },
+    { label: 'AI Co-pilot', index: 5, ref: aiCopilotRef, icon: Sparkles },
+    { label: 'Secure Handshake', index: 6, ref: contactRef, icon: ShieldCheck }
   ];
 
   return (
@@ -193,6 +214,47 @@ export default function App() {
           );
         })}
       </nav>
+
+      {/* Floating Tactical Bottom 'Jump to Section' Dock Navigation Bar - Fades/slides in past portal screen */}
+      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-[94vw] sm:max-w-max transition-all duration-700 ease-in-out ${
+        activeSection > 0 ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-6 pointer-events-none'
+      }`}>
+        <div className="flex items-center gap-1 p-1 bg-[#050505]/75 backdrop-blur-lg border border-white/10 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.85),_inset_0_1px_0_rgba(255,255,255,0.08)] relative">
+          {navItems.map((item) => {
+            const isActive = activeSection === item.index;
+            const Icon = item.icon;
+
+            return (
+              <button
+                key={item.index}
+                onClick={() => scrollToRef(item.ref)}
+                className={`flex items-center justify-center p-2.5 rounded-full transition-all relative group cursor-pointer focus:outline-none ${
+                  isActive ? 'text-[#00d1ff]' : 'text-white/40 hover:text-white/80'
+                }`}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="bottom-nav-active-pill"
+                    layout="position"
+                    className="absolute inset-0 bg-[#00d1ff]/10 border border-[#00d1ff]/30 rounded-full -z-10 shadow-[0_0_15px_rgba(0,209,255,0.2)]"
+                    transition={{ type: "spring", stiffness: 350, damping: 35, mass: 0.8 }}
+                  />
+                )}
+                
+                <Icon className={`w-4 h-4 transition-transform duration-300 group-hover:scale-110 ${
+                  isActive ? 'text-[#00d1ff] drop-shadow-[0_0_8px_rgba(0,209,255,0.5)]' : 'text-white/45 group-hover:text-white/85'
+                }`} />
+
+                {/* Cyberpunk style small elegant floating tooltip bubble */}
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3.5 px-2.5 py-1.5 bg-[#07070a]/95 border border-[#00d1ff]/20 text-[9px] uppercase tracking-wider text-[#00d1ff] rounded-none opacity-0 pointer-events-none group-hover:opacity-100 transition-all duration-200 shadow-[0_4px_15px_rgba(0,0,0,0.6)] whitespace-nowrap font-mono">
+                  {item.label}
+                  <span className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-[#07070a]/95" />
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Floating Interactive 2D/3D Hybrid Water Ripples Background */}
       <WaterBackground activeSection={activeSection} />

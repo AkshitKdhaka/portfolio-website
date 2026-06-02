@@ -60,7 +60,8 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
     spoutHeight: 0,
     beadY: 0,
     beadVy: 0,
-    beadVisible: false
+    beadVisible: false,
+    cooldown: 90
   });
 
   // Helper to add a physical water wave ripple
@@ -76,6 +77,39 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
       damping: 0.975 // smooth wave decay
     });
   };
+
+  const activeSectionRef = useRef(activeSection);
+
+  // Sync activeSection values into a ref to decouple state-triggering from canvas rendering tear-down
+  useEffect(() => {
+    activeSectionRef.current = activeSection;
+
+    if (activeSection === 0) {
+      // Trigger smooth continuous droplet loops
+      dropletStateRef.current = {
+        phase: 'falling',
+        y: -30,
+        vy: 1.5,
+        spoutHeight: 0,
+        beadY: 0,
+        beadVy: 0,
+        beadVisible: false,
+        cooldown: 90
+      };
+    } else {
+      // Gracefully clear/halt droplet when user leaves top screen to save CPU cycles
+      dropletStateRef.current = {
+        phase: 'done',
+        y: -30,
+        vy: 1.5,
+        spoutHeight: 0,
+        beadY: 0,
+        beadVy: 0,
+        beadVisible: false,
+        cooldown: 90
+      };
+    }
+  }, [activeSection]);
 
   // Main Canvas Setup, Resize, Interaction and Draw Loop
   useEffect(() => {
@@ -185,15 +219,15 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
       let oceanColor1 = '#030406'; // Deep dark space coordinates
       let oceanColor2 = '#06131c'; // Indigo oceanic floor
       
-      if (activeSection === 1) {
+      if (activeSectionRef.current === 1) {
         oceanColor2 = '#091c29'; // Journey deep glow
-      } else if (activeSection === 2) {
+      } else if (activeSectionRef.current === 2) {
         oceanColor2 = '#0b2633'; // Deep teal workshop
-      } else if (activeSection === 3) {
+      } else if (activeSectionRef.current === 3) {
         oceanColor2 = '#11131a'; // Slate foundation bento
-      } else if (activeSection === 4) {
+      } else if (activeSectionRef.current === 4) {
         oceanColor2 = '#0d2229'; // Cyber copilot glowing matrix
-      } else if (activeSection === 5) {
+      } else if (activeSectionRef.current === 5) {
         oceanColor2 = '#051b2a'; // Deep space finish
       }
 
@@ -473,6 +507,22 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
       const targetY = canvas.height * 0.55;
       const centerX = canvas.width / 2;
 
+      if (dropState.phase === 'done' && activeSectionRef.current === 0) {
+        if (dropState.cooldown > 0) {
+          dropState.cooldown--;
+        } else {
+          // Reset the droplet sequence for continuous dropping
+          dropState.phase = 'falling';
+          dropState.y = -30;
+          dropState.vy = 1.5;
+          dropState.spoutHeight = 0;
+          dropState.beadY = 0;
+          dropState.beadVy = 0;
+          dropState.beadVisible = false;
+          dropState.cooldown = 90; // reset cooldown for next round
+        }
+      }
+
       if (dropState.phase !== 'done') {
         if (dropState.phase === 'falling') {
           // Accelerate downwards naturally under gravity
@@ -670,7 +720,7 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
       window.removeEventListener('click', handleCanvasClick);
       window.removeEventListener('mousemove', handleCanvasMouseMove);
     };
-  }, [activeSection]);
+  }, []);
 
   return (
     <div ref={containerRef} className="fixed inset-0 w-full h-full z-0 overflow-hidden select-none pointer-events-none">
