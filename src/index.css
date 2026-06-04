@@ -43,6 +43,10 @@
 }
 
 /* Custom CSS Scroll styling and custom animations */
+html {
+  scroll-snap-type: y mandatory;
+}
+
 html, body {
   background-color: #050505;
   color: #e2e8f0;
@@ -51,6 +55,11 @@ html, body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+}
+
+.snap-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 /* Scrollbar styles */

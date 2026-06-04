@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useScroll, useVelocity, useTransform, useSpring } from 'motion/react';
 import { 
   Terminal, 
   ShieldCheck, 
@@ -16,7 +16,9 @@ import {
   History,
   Briefcase,
   Layers,
-  Sparkles
+  Sparkles,
+  Menu,
+  X
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -32,12 +34,51 @@ import AiCopilotSect from './components/AiCopilotSect';
 import InteractiveFooter from './components/InteractiveFooter';
 import SourceOverlay from './components/SourceOverlay';
 import { contactInfo } from './data';
+import { ambientSynth } from './lib/ambientSynth';
 
 export default function App() {
   const [activeSection, setActiveSection] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isSourceOpen, setIsSourceOpen] = useState(false);
   const [webGlSupported, setWebGlSupported] = useState(true);
+  const [isSynthPlaying, setIsSynthPlaying] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Ref tracking previous scroll position to selectively trigger sound transitions
+  const prevSectionRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (activeSection !== prevSectionRef.current) {
+      ambientSynth.playTransitionSound();
+      prevSectionRef.current = activeSection;
+    }
+  }, [activeSection]);
+
+  // Velocity-based motion blur calculations using Framer Motion hooks
+  const { scrollY } = useScroll();
+  const scrollVelocity = useVelocity(scrollY);
+  // Map movement velocity values to a precise blur radius (e.g. up to 6px blur on extreme scrolls)
+  const rawBlur = useTransform(scrollVelocity, [-3000, 0, 3000], [6, 0, 6]);
+  const blurLevel = useSpring(rawBlur, { stiffness: 75, damping: 28 });
+  const blurFilter = useTransform(blurLevel, (v) => `blur(${Math.min(v, 8)}px)`);
+
+  const toggleAmbientSynth = () => {
+    if (isSynthPlaying) {
+      ambientSynth.stop();
+      setIsSynthPlaying(false);
+    } else {
+      ambientSynth.start();
+      setIsSynthPlaying(true);
+    }
+  };
+
+  // Turn off ambient synth automatically on unmount to assure memory release
+  useEffect(() => {
+    return () => {
+      ambientSynth.stop();
+    };
+  }, []);
+
   // Permanently force dark mode on mount
   useEffect(() => {
     document.documentElement.classList.remove('light');
@@ -140,6 +181,68 @@ export default function App() {
     { label: 'Secure Handshake', index: 6, ref: contactRef, icon: ShieldCheck }
   ];
 
+  // Listen for Up / Down Arrow keys to smoothly navigate between portfolio sections
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore key events if the user is typing in interactive input fields or textareas (e.g., AI chat/form)
+      const targetElement = e.target as HTMLElement;
+      if (
+        targetElement &&
+        (targetElement.tagName === 'INPUT' ||
+         targetElement.tagName === 'TEXTAREA' ||
+         targetElement.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const nextIndex = Math.min(activeSection + 1, navItems.length - 1);
+        scrollToRef(navItems[nextIndex].ref);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prevIndex = Math.max(activeSection - 1, 0);
+        scrollToRef(navItems[prevIndex].ref);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeSection]);
+
+  // Framer Motion Gesture Swiping support for touch-enabled devices
+  const handlePanEnd = (event: any, info: any) => {
+    // Threshold bounds for vertical swipe actions
+    const thresholdY = 60; // px
+    const thresholdVelocity = 400; // px/sec
+
+    // Guard against accidental swipes on nested interactive scroll zones
+    const targetElement = event.target as HTMLElement;
+    if (
+      targetElement &&
+      (targetElement.tagName === 'INPUT' ||
+       targetElement.tagName === 'TEXTAREA' ||
+       targetElement.closest('.recruiter-chat-scroll') ||
+       targetElement.closest('.modal-content-scroll') ||
+       targetElement.closest('pre') ||
+       targetElement.isContentEditable)
+    ) {
+      return;
+    }
+
+    if (info.offset.y < -thresholdY || info.velocity.y < -thresholdVelocity) {
+      // Swipe Up -> Transition to next section below
+      const nextIndex = Math.min(activeSection + 1, navItems.length - 1);
+      scrollToRef(navItems[nextIndex].ref);
+    } else if (info.offset.y > thresholdY || info.velocity.y > thresholdVelocity) {
+      // Swipe Down -> Transition to previous section above
+      const prevIndex = Math.max(activeSection - 1, 0);
+      scrollToRef(navItems[prevIndex].ref);
+    }
+  };
+
   return (
     <div className="relative bg-[#040406] text-on-background selection:bg-primary-container selection:text-black">
       
@@ -174,10 +277,40 @@ export default function App() {
           <span className="font-mono text-[9px] text-[#00d1ff] tracking-wider uppercase">Active Dispatch: Noida</span>
         </div>
 
-        <div className="flex gap-3 sm:gap-4 items-center">
+        <div className="flex gap-2 sm:gap-3 items-center">
+          <button
+            onClick={toggleAmbientSynth}
+            className={`flex items-center gap-2 px-2.5 py-1.5 border transition-all cursor-pointer text-[10px] font-mono rounded-none ${
+              isSynthPlaying 
+                ? 'bg-[#00d1ff]/15 border-[#00d1ff] text-[#00d1ff] shadow-[0_0_15px_rgba(0,209,255,0.25)] font-semibold'
+                : 'bg-white/5 border-white/10 text-white/50 hover:text-white hover:border-white/30'
+            }`}
+            title="Toggle Immersive Ambient Drone Pad"
+          >
+            {isSynthPlaying ? (
+              <>
+                <div className="flex items-end gap-0.5 h-3">
+                  <motion.span animate={{ height: [4, 12, 4] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-0.5 bg-[#00d1ff] inline-block" />
+                  <motion.span animate={{ height: [8, 3, 8] }} transition={{ repeat: Infinity, duration: 0.8 }} className="w-0.5 bg-[#00d1ff] inline-block" />
+                  <motion.span animate={{ height: [3, 10, 3] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-0.5 bg-[#00d1ff] inline-block" />
+                </div>
+                <span className="uppercase tracking-wider text-[9px]">Ambient Live</span>
+              </>
+            ) : (
+              <>
+                <div className="flex items-end gap-0.5 h-3">
+                  <span className="w-0.5 h-1 bg-white/40 inline-block" />
+                  <span className="w-0.5 h-1 bg-white/40 inline-block" />
+                  <span className="w-0.5 h-1 bg-white/40 inline-block" />
+                </div>
+                <span className="uppercase tracking-wider text-[9px]">Ambient Off</span>
+              </>
+            )}
+          </button>
+
           <button
             onClick={() => setIsSourceOpen(true)}
-            className="px-4 py-1.5 bg-[#00d1ff]/10 border border-[#00d1ff]/20 text-xs font-mono text-[#00d1ff] rounded-none hover:bg-[#00d1ff] hover:text-black hover:shadow-[0_0_15px_rgba(0,209,255,0.3)] transition-all cursor-pointer"
+            className="px-3.5 py-1.5 bg-[#00d1ff]/10 border border-[#00d1ff]/20 text-xs font-mono text-[#00d1ff] rounded-none hover:bg-[#00d1ff] hover:text-black hover:shadow-[0_0_15px_rgba(0,209,255,0.3)] transition-all cursor-pointer"
           >
             Payload JSON
           </button>
@@ -216,7 +349,7 @@ export default function App() {
       </nav>
 
       {/* Floating Tactical Bottom 'Jump to Section' Dock Navigation Bar - Fades/slides in past portal screen */}
-      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-[94vw] sm:max-w-max transition-all duration-700 ease-in-out ${
+      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-[94vw] sm:max-w-max hidden sm:block transition-all duration-700 ease-in-out ${
         activeSection > 0 ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-6 pointer-events-none'
       }`}>
         <div className="flex items-center gap-1 p-1 bg-[#050505]/75 backdrop-blur-lg border border-white/10 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.85),_inset_0_1px_0_rgba(255,255,255,0.08)] relative">
@@ -256,17 +389,110 @@ export default function App() {
         </div>
       </div>
 
+      {/* Mobile Drawer Navigation FAB Trigger */}
+      <div className={`fixed bottom-6 right-1/2 translate-x-1/2 sm:translate-x-0 sm:right-6 z-45 sm:hidden transition-all duration-500 pb-2 ${
+        activeSection > 0 ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-6 pointer-events-none'
+      }`}>
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="h-10 px-4 rounded-full bg-[#050505]/95 border border-[#00d1ff]/50 text-[#00d1ff] flex items-center gap-2 shadow-[0_4px_20px_rgba(0,209,255,0.4)] cursor-pointer hover:bg-[#00d1ff]/10 focus:outline-none font-mono text-[10px] uppercase font-bold tracking-wider"
+          aria-label="Open Navigation Menu"
+        >
+          <Menu className="w-3.5 h-3.5 animate-pulse" />
+          <span>Menu</span>
+        </button>
+      </div>
+
+      {/* Mobile Drawer Overlay Portal */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black z-50 sm:hidden"
+            />
+            {/* Sidebar Drawer */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="fixed right-0 top-0 bottom-0 w-72 bg-[#07070a]/95 border-l border-white/10 z-50 sm:hidden p-6 shadow-2xl flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full border border-[#00d1ff] flex items-center justify-center">
+                      <div className="w-2.5 h-2.5 bg-[#00d1ff] rounded-sm rotate-45" />
+                    </div>
+                    <span className="font-mono text-xs text-[#00d1ff] uppercase tracking-wider font-bold">AKD.DOCK</span>
+                  </div>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-1 text-white/50 hover:text-white cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  {navItems.map((item) => {
+                    const isActive = activeSection === item.index;
+                    const Icon = item.icon;
+
+                    return (
+                      <button
+                        key={item.index}
+                        onClick={() => {
+                          scrollToRef(item.ref);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`flex items-center gap-4 px-4 py-3 border transition-all cursor-pointer text-left focus:outline-none ${
+                          isActive 
+                            ? 'bg-[#00d1ff]/10 border-[#00d1ff]/30 text-[#00d1ff] shadow-[inset_0_0_10px_rgba(0,209,255,0.15)] font-semibold' 
+                            : 'bg-transparent border-transparent text-white/60 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        <Icon className={`w-4.5 h-4.5 ${isActive ? 'text-[#00d1ff] drop-shadow-[0_0_6px_#00d1ff]' : 'text-white/45'}`} />
+                        <div className="flex flex-col select-none">
+                          <span className="font-mono text-[9px] text-[#00d1ff]/60 leading-none">0{item.index}</span>
+                          <span className="font-sans text-xs tracking-wide uppercase mt-0.5">{item.label}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Drawer bottom info */}
+              <div className="border-t border-white/5 pt-4">
+                <p className="font-mono text-[8px] text-white/30 uppercase tracking-[0.1em]">Target Session Profile</p>
+                <p className="font-mono text-[9px] text-white/50 tracking-wider">akshitkumardhaka99@gmail.com</p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Floating Interactive 2D/3D Hybrid Water Ripples Background */}
       <WaterBackground activeSection={activeSection} />
 
       {/* Main Single Screen Layout Narrative */}
-      <main className="relative z-10 w-full overflow-hidden">
+      <motion.main 
+        style={{ filter: blurFilter }} 
+        onPanEnd={handlePanEnd}
+        className="relative z-10 w-full overflow-hidden"
+      >
         
         {/* Section 0: Immersive Water Portal */}
         <div 
           id="portal" 
           ref={portalRef} 
-          className="h-screen w-full flex flex-col justify-between items-center relative z-20 pt-28 pb-16 px-4 md:px-8 overflow-hidden select-none"
+          className="h-screen w-full flex flex-col justify-between items-center relative z-20 pt-28 pb-16 px-4 md:px-8 overflow-hidden select-none snap-section"
         >
           {/* Spacer to shift weights down */}
           <div />
@@ -340,7 +566,7 @@ export default function App() {
         </div>
 
         {/* Section 1: Hero */}
-        <div id="hero" ref={heroRef} className="min-h-screen flex items-center justify-center">
+        <div id="hero" ref={heroRef} className="min-h-screen flex items-center justify-center snap-section">
           <HeroSect 
             onExplore={() => scrollToRef(journeyRef)} 
             onViewSource={() => setIsSourceOpen(true)} 
@@ -351,7 +577,7 @@ export default function App() {
         <motion.div 
           id="journey" 
           ref={journeyRef} 
-          className="min-h-screen flex items-center justify-center py-20"
+          className="min-h-screen flex items-center justify-center py-20 snap-section"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -364,7 +590,7 @@ export default function App() {
         <motion.div 
           id="projects" 
           ref={workshopRef} 
-          className="min-h-screen flex items-center justify-center py-20"
+          className="min-h-screen flex items-center justify-center py-20 snap-section"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -377,7 +603,7 @@ export default function App() {
         <motion.div 
           id="foundation" 
           ref={foundationRef} 
-          className="min-h-screen flex items-center justify-center py-20"
+          className="min-h-screen flex items-center justify-center py-20 snap-section"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -390,7 +616,7 @@ export default function App() {
         <motion.div 
           id="ai-copilot" 
           ref={aiCopilotRef} 
-          className="min-h-screen flex items-center justify-center py-20"
+          className="min-h-screen flex items-center justify-center py-20 snap-section"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -403,7 +629,7 @@ export default function App() {
         <motion.div 
           id="contact" 
           ref={contactRef} 
-          className="min-h-screen flex items-center justify-center bg-gradient-to-b from-transparent to-[#010f1f]/80 py-20"
+          className="min-h-screen flex items-center justify-center bg-gradient-to-b from-transparent to-[#010f1f]/80 py-20 snap-section"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -411,7 +637,7 @@ export default function App() {
         >
           <InteractiveFooter />
         </motion.div>
-      </main>
+      </motion.main>
 
       {/* Interactive JSON Source Code IDE Overlay modal */}
       <AnimatePresence>

@@ -101,6 +101,7 @@ Integrated onto the **Foundation** layout bento array, fetching real-time reputa
 - **API Cache Strategy:** Configured with server-side proxy routes using `cache: 'no-store'` and cache-busting search parameters to bypass stale CDN caches on hot refreshes.
 - **Dynamic Multi-Year Heatmap:** A detailed, responsive contribution calendar representing active years 2022 to 2026. Custom controls allow frictionless switching between years.
 - **Month Indicators & Layout Reflows:** Maps absolute calendar days into standard GitHub-style column grids, featuring precise monthly marker alignment (Jan-Dec) with localized formatting.
+- **Staggered & Scale Hover-Tactile Response:** Leverages Framer Motion staggered grid cascades when entering the viewport, plus elegant `whileHover={{ scale: 1.2, zIndex: 10 }}` configurations on individual day tiles to offer interactive visual depth.
 - **Cyberpunk Glowing Loading Veil:** When switching years, a beautiful backdrop-blurred loading overlay with neon cyan accents, animated spinner rings, and pulsing active terminal logs is deployed dynamically over the grid space to ensure zero blinking or blank states.
 - **Micro-Animations & Key Synchronization:** Leveraging Framer Motion staggered transition variants. Explicitly bound to the active custom key `key={selectedYear}` to reset and play immersive entrance reveal sweeps upon every year filter update.
 - **Graceful Telemetry Fallbacks:** In case of API rate throttles or network issues, a deterministic fallback scraper algorithm generates realistic and perfectly structured activity blocks to keep the layout complete and operational.
@@ -109,6 +110,26 @@ Integrated onto the **Foundation** layout bento array, fetching real-time reputa
 Using the client-side `jspdf` package, clicking the **Download CV** trigger instantly generates a professionally structured, single-page, multi-column executive resume.
 - **Design Layout:** Employs precise programmatic pixel placements establishing crisp grid sections, custom color labels, margin constraints, and text size standards.
 - **Performance:** Executes entirely in-memory without necessitating server-side file buffers or secondary file storage layers.
+
+### 6. 🧭 Floating Tactical Navigation Dock Bar
+Complementing the standard vertical sidebar indicator, a sleek horizontal "Jump to Section" nav dock floats persistently at the bottom center of the screen once scrolling past the initial water landing portal.
+- **Visual Feedback:** Shows active glowing status on current sections.
+- **Layout Constraint Preservation:** Uses Framer Motion's shared layout layoutId capsule to smoothly glide selection indicators between buttons without jumpy page lags.
+
+### 7. 💧 Continuous Splash Loop Physics (Water Portal)
+The landing page background features a premium theme-adaptive physical pixel droplet drop machine:
+- **Loop continuous drops:** Always outputs and drops water elements consecutively, restarting cleanly over a programmed frame cooldown.
+- **Performance decoupled optimizations:** Uses background thread references to halt canvas calculations as soon as the viewport scrolls away, guaranteeing zero lag or excess CPU usage when looking at project works or text sections.
+
+### 8. 📋 Clip Copy Email Assist
+Located next to the email coordinate inside the contact sector, a localized button copies the address to system memory with a click. Instantly replaces labels with a checks icon and updates labels to "Copied!" for responsive recruiter feedback, fading back cleanly after 2 seconds.
+
+---
+
+## 🏛️ Comprehensive Architecture Documentation
+
+For a detailed breakdown of all code internals, files, and engineering methods, read the specialized **[System Architecture & File Manual (DOCUMENTATION.md)](/DOCUMENTATION.md)**.
+
 
 ---
 
