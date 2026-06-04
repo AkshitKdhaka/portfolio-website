@@ -384,3 +384,19 @@ To align active narratives perfectly with incoming section boundaries:
 
 * **Viewport Scroll Snapping:** Applied `scroll-snap-type: y mandatory` globally on the root HTML layer.
 * **Stiff Margin realignments:** Employs `.snap-section { scroll-snap-align: start; scroll-snap-stop: always; }` properties on key page panels, stopping manual scrolls right at the origin boundary of each incoming screen section.
+
+---
+
+### 5.8 Haptic High-Frequency Auditory Click Snaps
+To reinforce visceral physical feed loops as the user transitions:
+
+* **Crisp Dual-Tone Waveform:** Triggers a sub-100ms sinusoidal oscillator pulse starting at 2500Hz and gliding down exponentially to 1250Hz.
+* **Ultra-Faint Presence:** Designed with an instantaneous 0.8% peak amplitude scale, guaranteeing the audio acts like an organic phone hum or gentle haptic tap rather than an intrusive auditory distraction.
+
+---
+
+### 5.9 Real-Time Aesthetic Telemetry Velocity HUD
+Adds a military-grade monitoring interface in the viewport margin:
+
+* **Momentum Subscription Hooks:** Captures continuous velocity values via Framer Motion's `useVelocity` change observers inside client components.
+* **Aesthetic Diagnostic Readings:** Renders instantaneous pixel-per-second values, current displacement pulse statuses, and active sensory flags directly in the unused bottom-left corner of primary desktop viewports to match technical cyberpunk aesthetics.

@@ -146,6 +146,41 @@ class AmbientSynth {
       // Intentionally silent
     }
   }
+
+  public playClickPingSound() {
+    try {
+      const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
+      if (!AudioContextClass) return;
+
+      const tempCtx = new AudioContextClass();
+      
+      const osc = tempCtx.createOscillator();
+      const gain = tempCtx.createGain();
+
+      // Sharp, clean high-frequency haptic acoustic ping
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(2500, tempCtx.currentTime); // Crisp top frequency
+      osc.frequency.exponentialRampToValueAtTime(1250, tempCtx.currentTime + 0.04);
+
+      gain.gain.setValueAtTime(0, tempCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.008, tempCtx.currentTime + 0.003); // Non-intrusive safe click gain (0.8% volume level)
+      gain.gain.exponentialRampToValueAtTime(0.0001, tempCtx.currentTime + 0.05);
+
+      osc.connect(gain);
+      gain.connect(tempCtx.destination);
+
+      osc.start();
+      osc.stop(tempCtx.currentTime + 0.07);
+
+      setTimeout(() => {
+        try {
+          tempCtx.close();
+        } catch (_) {}
+      }, 100);
+    } catch (_) {
+      // Intentionally silent
+    }
+  }
 }
 
 export const ambientSynth = new AmbientSynth();
