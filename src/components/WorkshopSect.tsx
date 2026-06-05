@@ -7,10 +7,24 @@ import { projects } from '../data';
 import { Project } from '../types';
 
 const containerVariants = {
-  hidden: {},
+  hidden: { opacity: 0 },
   visible: {
+    opacity: 1,
     transition: {
-      staggerChildren: 0.15,
+      staggerChildren: 0.12,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const headerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1] as const,
     },
   },
 };
@@ -361,42 +375,56 @@ export default function WorkshopSect() {
   return (
     <section className="relative py-24 w-full max-w-6xl mx-auto px-4 sm:px-8 z-20">
       
-      {/* Narrative Section Header */}
-      <div className="mb-16 flex flex-col items-center text-center">
-        <div className="font-mono text-xs text-[#00d1ff] tracking-[0.4em] uppercase mb-3 select-none">
-          // CHAPTER II
-        </div>
-        <h2 className="font-display text-4xl sm:text-5xl font-black text-white uppercase tracking-wider select-none animate-pulse">
-          THE WORKSHOP
-        </h2>
-        <p className="font-sans text-base sm:text-lg text-gray-400 max-w-2xl mt-4">
-          A catalog of validated active deployments. Architected for speed, organic indexability, and highly responsive user interfaces.
-        </p>
-        <div className="w-16 h-1 bg-[#00d1ff] mt-6 rounded-full shadow-[0_0_15px_rgba(0,209,255,0.6)]"></div>
-      </div>
-
-      {/* 2-column Layout of Projects showing 2 cards in one row on wider screens */}
-      <motion.div 
-        className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16 pb-12"
+      <motion.div
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
+        className="w-full"
       >
-        {projects.map((proj: Project, idx: number) => {
-          return (
-            <motion.div 
-              key={proj.name} 
-              className="h-full"
-              variants={cardEntryVariants}
-            >
-              <ProjectCard
-                proj={proj}
-                idx={idx}
-              />
-            </motion.div>
-          );
-        })}
+        {/* Narrative Section Header */}
+        <div className="mb-16 flex flex-col items-center text-center">
+          <motion.div 
+            variants={headerVariants}
+            className="font-mono text-xs text-[#00d1ff] tracking-[0.4em] uppercase mb-3 select-none"
+          >
+            // CHAPTER II
+          </motion.div>
+          <motion.h2 
+            variants={headerVariants}
+            className="font-display text-4xl sm:text-5xl font-black text-white uppercase tracking-wider select-none"
+          >
+            THE WORKSHOP
+          </motion.h2>
+          <motion.p 
+            variants={headerVariants}
+            className="font-sans text-base sm:text-lg text-gray-400 max-w-2xl mt-4"
+          >
+            A catalog of validated active deployments. Architected for speed, organic indexability, and highly responsive user interfaces.
+          </motion.p>
+          <motion.div 
+            variants={headerVariants}
+            className="w-16 h-1 bg-[#00d1ff] mt-6 rounded-full shadow-[0_0_15px_rgba(0,209,255,0.6)]"
+          />
+        </div>
+
+        {/* 2-column Layout of Projects showing 2 cards in one row on wider screens */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16 pb-12">
+          {projects.map((proj: Project, idx: number) => {
+            return (
+              <motion.div 
+                key={proj.name} 
+                className="h-full"
+                variants={cardEntryVariants}
+              >
+                <ProjectCard
+                  proj={proj}
+                  idx={idx}
+                />
+              </motion.div>
+            );
+          })}
+        </div>
       </motion.div>
 
     </section>

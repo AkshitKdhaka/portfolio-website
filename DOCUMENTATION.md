@@ -400,3 +400,16 @@ Adds a military-grade monitoring interface in the viewport margin:
 
 * **Momentum Subscription Hooks:** Captures continuous velocity values via Framer Motion's `useVelocity` change observers inside client components.
 * **Aesthetic Diagnostic Readings:** Renders instantaneous pixel-per-second values, current displacement pulse statuses, and active sensory flags directly in the unused bottom-left corner of primary desktop viewports to match technical cyberpunk aesthetics.
+
+---
+
+### 5.10 Real-Time Timezone-Calibrated Background Glow Recalibration
+Integrates professional local time tracking to dynamically align the ambient rendering colors with the visitor's biological time context:
+
+* **Unified 1Hz Time Synchronizer:** Sets up a secure 1-second interval clock hook that maps continuous hours, minutes, and seconds, updating the telemetry HUD instantly without introducing thread-blocking lag.
+* **Four-Phase Color Space Matrix:** Resolves the local hour into four distinct cinematic light profiles:
+  * **DAWN_SUNRISE (05:00 - 11:00):** Warm golden-orange solar ambiance (`#ff9c3a`) backed by rich earthen background gradient coordinates.
+  * **OCEAN_OCEANIC (11:00 - 17:00):** Cinematic high-contrast cyberocean cyan rendering (`#00d1ff`) over deep sapphire oceanic trenches.
+  * **SUNSET_TWILIGHT (17:00 - 21:00):** Moody purple-to-magenta neon gradient displays (`#ff3b94`) that mimic deep shore evenings.
+  * **MIDNIGHT_NEBULA (21:00 - 05:00):** Restorative cosmic ultraviolet halos (`#7a46ff`) over deep abyss dark spaces.
+* **Ref-Cached Canvas Vector Refactoring:** Pipes the active hours value seamlessly down to the `<WaterBackground>` component. It replaces all hardcoded cyan variables inside specular reflections, mouse spotlights, ambient space particles, splash rings, and fluid teardrop simulations, establishing a unified time-calibrated rendering experience.

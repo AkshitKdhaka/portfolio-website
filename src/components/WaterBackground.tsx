@@ -39,11 +39,22 @@ interface TrailParticle {
   swayOffset: number;
 }
 
-interface WaterBackgroundProps {
-  activeSection: number;
+interface ColorTheme {
+  timeSuffix: string;
+  glowMain: string;
+  glowRgb: string;
+  glowRgbSecondary: string;
+  oceanColor1: string;
+  oceanColor2Base: string;
+  oceanColor2Overlays: string[];
 }
 
-export default function WaterBackground({ activeSection }: WaterBackgroundProps) {
+interface WaterBackgroundProps {
+  activeSection: number;
+  localHours?: number;
+}
+
+export default function WaterBackground({ activeSection, localHours }: WaterBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ripplesRef = useRef<Ripple[]>([]);
@@ -51,17 +62,108 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
   const lastMousePosRef = useRef({ x: 0, y: 0, time: 0 });
   const particlesRef = useRef<Particle[]>([]);
   const trailParticlesRef = useRef<TrailParticle[]>([]);
+
+  const DEFAULT_THEME: ColorTheme = {
+    timeSuffix: 'OCEAN_OCEANIC',
+    glowMain: '#00d1ff',
+    glowRgb: '0, 209, 255',
+    glowRgbSecondary: '24, 255, 255',
+    oceanColor1: '#030406',
+    oceanColor2Base: '#06131c',
+    oceanColor2Overlays: [
+      '#091c29',
+      '#0b2633',
+      '#11131a',
+      '#0d2229',
+      '#051b2a'
+    ]
+  };
+
+  const activeThemeRef = useRef<ColorTheme>(DEFAULT_THEME);
+
+  useEffect(() => {
+    const hour = localHours !== undefined ? localHours : new Date().getHours();
+    let theme: ColorTheme;
+
+    if (hour >= 5 && hour < 11) {
+      theme = {
+        timeSuffix: 'DAWN_SUNRISE',
+        glowMain: '#ff9c3a',
+        glowRgb: '255, 156, 58',
+        glowRgbSecondary: '255, 102, 36',
+        oceanColor1: '#050302',
+        oceanColor2Base: '#1e0e02',
+        oceanColor2Overlays: [
+          '#1a0c02',
+          '#240f02',
+          '#140d0a',
+          '#2a1202',
+          '#180b05'
+        ]
+      };
+    } else if (hour >= 11 && hour < 17) {
+      theme = {
+        timeSuffix: 'OCEAN_OCEANIC',
+        glowMain: '#00d1ff',
+        glowRgb: '0, 209, 255',
+        glowRgbSecondary: '24, 255, 255',
+        oceanColor1: '#030406',
+        oceanColor2Base: '#06131c',
+        oceanColor2Overlays: [
+          '#091c29',
+          '#0b2633',
+          '#11131a',
+          '#0d2229',
+          '#051b2a'
+        ]
+      };
+    } else if (hour >= 17 && hour < 21) {
+      theme = {
+        timeSuffix: 'SUNSET_TWILIGHT',
+        glowMain: '#ff3b94',
+        glowRgb: '255, 59, 148',
+        glowRgbSecondary: '180, 50, 255',
+        oceanColor1: '#050205',
+        oceanColor2Base: '#1a061c',
+        oceanColor2Overlays: [
+          '#210925',
+          '#2a0531',
+          '#17101a',
+          '#270a2b',
+          '#1a0a22'
+        ]
+      };
+    } else {
+      theme = {
+        timeSuffix: 'MIDNIGHT_NEBULA',
+        glowMain: '#7a46ff',
+        glowRgb: '122, 70, 255',
+        glowRgbSecondary: '0, 150, 255',
+        oceanColor1: '#020306',
+        oceanColor2Base: '#060714',
+        oceanColor2Overlays: [
+          '#0a0b21',
+          '#0e0d30',
+          '#11111a',
+          '#0c0c29',
+          '#07061f'
+        ]
+      };
+    }
+
+    activeThemeRef.current = theme;
+  }, [localHours]);
   
   // Physical droplet state machine mimicking high-speed high-fidelity splash physics
   const dropletStateRef = useRef({
     phase: 'falling', // 'falling' | 'impact' | 'rebound' | 'bead_rise' | 'bead_fall' | 'secondary_impact' | 'done'
     y: -30,
-    vy: 1.5,
+    vy: 0.3,
     spoutHeight: 0,
     beadY: 0,
     beadVy: 0,
     beadVisible: false,
-    cooldown: 90
+    cooldown: 120
   });
 
   // Helper to add a physical water wave ripple
@@ -89,24 +191,24 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
       dropletStateRef.current = {
         phase: 'falling',
         y: -30,
-        vy: 1.5,
+        vy: 0.3,
         spoutHeight: 0,
         beadY: 0,
         beadVy: 0,
         beadVisible: false,
-        cooldown: 90
+        cooldown: 120
       };
     } else {
       // Gracefully clear/halt droplet when user leaves top screen to save CPU cycles
       dropletStateRef.current = {
         phase: 'done',
         y: -30,
-        vy: 1.5,
+        vy: 0.3,
         spoutHeight: 0,
         beadY: 0,
         beadVy: 0,
         beadVisible: false,
-        cooldown: 90
+        cooldown: 120
       };
     }
   }, [activeSection]);
@@ -143,7 +245,7 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
           speedX: Math.cos(angle) * speed,
           speedY: Math.sin(angle) * speed,
           opacity: 0.8,
-          color: '#00d1ff'
+          color: activeThemeRef.current.glowMain
         });
       }
     };
@@ -182,9 +284,9 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
           opacity: 0.75 + Math.random() * 0.25,
           decay: 0.007 + Math.random() * 0.013, // Slow ethereal fade
           color: Math.random() > 0.6
-            ? 'rgba(0, 229, 255, 0.8)' // neon water cyan
+            ? `rgba(${activeThemeRef.current.glowRgb}, 0.8)` // neon water cyan
             : Math.random() > 0.35
-              ? 'rgba(24, 255, 255, 0.7)' // deep lagoon turquoise
+              ? `rgba(${activeThemeRef.current.glowRgbSecondary}, 0.7)` // deep lagoon turquoise
               : 'rgba(240, 253, 250, 0.95)', // sparkling silver-white bubbles
           isBubble,
           swaySpeed: 1.2 + Math.random() * 2.2,
@@ -202,11 +304,11 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
       localParticles.push({
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight,
-        size: 0.5 + Math.random() * 1.5,
+        size: 0.5 + Math.random() * 1.2,
         speedX: (Math.random() - 0.5) * 0.35,
         speedY: (Math.random() - 0.5) * 0.25 - 0.1, // floating slightly upwards
         opacity: 0.15 + Math.random() * 0.4,
-        color: Math.random() > 0.65 ? 'rgba(0, 209, 255, 0.4)' : 'rgba(255, 255, 255, 0.25)'
+        color: Math.random() > 0.65 ? `rgba(${activeThemeRef.current.glowRgb}, 0.4)` : 'rgba(255, 255, 255, 0.25)'
       });
     }
 
@@ -215,20 +317,13 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // 1. Render Cinematic Cyberocean Ocean Bed Gradient Background
-      // Shifts slightly based on active scroll section
-      let oceanColor1 = '#030406'; // Deep dark space coordinates
-      let oceanColor2 = '#06131c'; // Indigo oceanic floor
+      // Shifts slightly based on active scroll section with timezone-calibrated colors
+      let oceanColor1 = activeThemeRef.current.oceanColor1; // Deep dark space coordinates
+      let oceanColor2 = activeThemeRef.current.oceanColor2Base; // Indigo oceanic floor
       
-      if (activeSectionRef.current === 1) {
-        oceanColor2 = '#091c29'; // Journey deep glow
-      } else if (activeSectionRef.current === 2) {
-        oceanColor2 = '#0b2633'; // Deep teal workshop
-      } else if (activeSectionRef.current === 3) {
-        oceanColor2 = '#11131a'; // Slate foundation bento
-      } else if (activeSectionRef.current === 4) {
-        oceanColor2 = '#0d2229'; // Cyber copilot glowing matrix
-      } else if (activeSectionRef.current === 5) {
-        oceanColor2 = '#051b2a'; // Deep space finish
+      const sIndex = activeSectionRef.current;
+      if (sIndex >= 1 && sIndex <= 5) {
+        oceanColor2 = activeThemeRef.current.oceanColor2Overlays[sIndex - 1];
       }
 
       const oceanGradient = ctx.createRadialGradient(
@@ -250,7 +345,7 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
 
       // 3. Draw Perspective Holographic Cyber Grid
       // Mesh vertices refract and shift based on live mathematical waves
-      ctx.strokeStyle = 'rgba(0, 209, 255, 0.05)';
+      ctx.strokeStyle = `rgba(${activeThemeRef.current.glowRgb}, 0.05)`;
       ctx.lineWidth = 1;
 
       const gridCols = 44;
@@ -328,7 +423,7 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
           if (Math.abs(pt.height) > 1.2) {
             // Bright specularity where wave slope is active
             const pulse = Math.min(Math.abs(pt.height) * 0.04, 0.45);
-            ctx.fillStyle = `rgba(0, 209, 255, ${pulse})`;
+            ctx.fillStyle = `rgba(${activeThemeRef.current.glowRgb}, ${pulse})`;
             ctx.beginPath();
             ctx.arc(pt.sx, pt.sy, 1 + Math.abs(pt.height) * 0.1, 0, Math.PI * 2);
             ctx.fill();
@@ -361,8 +456,8 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
         const spotY = mouse.y + cDistY;
 
         const cursorSpot = ctx.createRadialGradient(spotX, spotY, 5, spotX, spotY, 180);
-        cursorSpot.addColorStop(0, 'rgba(0, 209, 255, 0.08)');
-        cursorSpot.addColorStop(0.5, 'rgba(0, 209, 255, 0.02)');
+        cursorSpot.addColorStop(0, `rgba(${activeThemeRef.current.glowRgb}, 0.08)`);
+        cursorSpot.addColorStop(0.5, `rgba(${activeThemeRef.current.glowRgb}, 0.02)`);
         cursorSpot.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = cursorSpot;
         ctx.beginPath();
@@ -413,8 +508,8 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
       particlesRef.current = particleArr.filter((p) => {
         p.x += p.speedX;
         p.y += p.speedY;
-        p.speedY += 0.08; // slight gravity pull downwards on splash splinters
-        p.opacity -= 0.012; // slow fade
+        p.speedY += 0.03; // slight gravity pull downwards on splash splinters
+        p.opacity -= 0.008; // slow fade
 
         ctx.fillStyle = p.color;
         ctx.globalAlpha = Math.max(p.opacity, 0);
@@ -469,7 +564,7 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
           // Render highly polished glossy sphere bubble (outline + translucent fill + white flare glare)
           ctx.strokeStyle = tp.color;
           ctx.lineWidth = 0.85;
-          ctx.fillStyle = 'rgba(0, 209, 255, 0.06)';
+          ctx.fillStyle = `rgba(${activeThemeRef.current.glowRgb}, 0.06)`;
 
           ctx.beginPath();
           ctx.arc(rx, ry, tp.size, 0, Math.PI * 2);
@@ -514,33 +609,59 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
           // Reset the droplet sequence for continuous dropping
           dropState.phase = 'falling';
           dropState.y = -30;
-          dropState.vy = 1.5;
+          dropState.vy = 0.3;
           dropState.spoutHeight = 0;
           dropState.beadY = 0;
           dropState.beadVy = 0;
           dropState.beadVisible = false;
-          dropState.cooldown = 90; // reset cooldown for next round
+          dropState.cooldown = 120; // reset cooldown for next round
         }
       }
 
       if (dropState.phase !== 'done') {
         if (dropState.phase === 'falling') {
-          // Accelerate downwards naturally under gravity
-          dropState.vy += 0.42;
+          // Accelerate downwards naturally under gravity, much slower and smoother
+          dropState.vy += 0.045;
           dropState.y += dropState.vy;
 
-          // Draw the falling droplet shape (glossy neon cyan teardrop with glowing highlight)
+          // Draw the falling droplet shape (glossy, glass-refracting 3D liquid teardrop with glowing highlights)
+          const dropGrad = ctx.createRadialGradient(
+            centerX - 1.5, dropState.y, 0.5,
+            centerX, dropState.y + 1, 7
+          );
+          dropGrad.addColorStop(0, '#ffffff'); // Internal bright caustic refraction focal point
+          dropGrad.addColorStop(0.25, `rgba(${activeThemeRef.current.glowRgb}, 0.9)`); 
+          dropGrad.addColorStop(0.8, `rgba(${activeThemeRef.current.glowRgbSecondary || '0, 130, 255'}, 0.95)`);
+          dropGrad.addColorStop(1, 'rgba(255, 255, 255, 0.35)'); // Soft highlight wrap
+          
           ctx.beginPath();
-          ctx.fillStyle = 'rgba(0, 209, 255, 0.95)';
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-          ctx.lineWidth = 1.25;
+          ctx.fillStyle = dropGrad;
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.lineWidth = 1;
 
-          // Pointy top, organic round bulb bottom teardrop
+          // Highly organic liquid droplet drawing: pointy top, smoothly widening to a bulbous sphere base
           ctx.moveTo(centerX, dropState.y - 12);
-          ctx.bezierCurveTo(centerX - 4.5, dropState.y + 2, centerX - 5.5, dropState.y + 6, centerX, dropState.y + 6);
-          ctx.bezierCurveTo(centerX + 5.5, dropState.y + 6, centerX + 4.5, dropState.y + 2, centerX, dropState.y - 12);
+          ctx.bezierCurveTo(centerX - 5.5, dropState.y - 4, centerX - 7, dropState.y + 1, centerX - 7, dropState.y + 4);
+          ctx.bezierCurveTo(centerX - 7, dropState.y + 8.5, centerX - 4, dropState.y + 11.5, centerX, dropState.y + 11.5);
+          ctx.bezierCurveTo(centerX + 4, dropState.y + 11.5, centerX + 7, dropState.y + 8.5, centerX + 7, dropState.y + 4);
+          ctx.bezierCurveTo(centerX + 7, dropState.y + 1, centerX + 5.5, dropState.y - 4, centerX, dropState.y - 12);
+          ctx.closePath();
           ctx.fill();
           ctx.stroke();
+
+          // High-shimmer reflection flare inside the teardrop
+          ctx.beginPath();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+          ctx.lineWidth = 0.75;
+          ctx.moveTo(centerX - 4.5, dropState.y + 1);
+          ctx.bezierCurveTo(centerX - 4.5, dropState.y + 5, centerX - 2, dropState.y + 7.5, centerX, dropState.y + 7.5);
+          ctx.stroke();
+          
+          // Specular peak pinpoint node
+          ctx.beginPath();
+          ctx.fillStyle = '#ffffff';
+          ctx.arc(centerX - 2, dropState.y + 1, 1, 0, Math.PI * 2);
+          ctx.fill();
 
           // Wake bubble trails forming in midair
           if (Math.random() > 0.4) {
@@ -554,7 +675,7 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
               speedY: -0.1,
               opacity: 0.65,
               decay: 0.035,
-              color: 'rgba(0, 229, 255, 0.65)',
+              color: `rgba(${activeThemeRef.current.glowRgb}, 0.65)`,
               isBubble: false,
               swaySpeed: 1,
               swayOffset: 0
@@ -575,33 +696,33 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
           // Primary particles spray crown ring
           for (let i = 0; i < 48; i++) {
             const angle = (Math.random() * Math.PI) + Math.PI; // fly upwards and outwards
-            const force = 2.5 + Math.random() * 7.5;
+            const force = 1.0 + Math.random() * 2.5;
             particlesRef.current.push({
               x: centerX,
               y: targetY - 2,
               size: 1.5 + Math.random() * 2.5,
               speedX: Math.cos(angle) * force,
-              speedY: Math.sin(angle) * force - 2.5, // strong upwards impulse
+              speedY: Math.sin(angle) * force - 1.0, // gentle upwards impulse
               opacity: 1,
-              color: Math.random() > 0.45 ? '#00d1ff' : '#00ffff'
+              color: Math.random() > 0.45 ? activeThemeRef.current.glowMain : `rgba(${activeThemeRef.current.glowRgbSecondary}, 1)`
             });
           }
 
-          // Transition to vertical liquid spout column phase
+          // Transition to vertical liquid spout column phase (higher and slower)
           dropState.phase = 'rebound';
-          dropState.vy = 8.5; // rising velocity of fluid jet
+          dropState.vy = 5.2; // robust fluid jet rise velocity for dramatic height
           dropState.spoutHeight = 0;
         }
 
         if (dropState.phase === 'rebound') {
-          // Liquid siphoned upwards, spout grows while gravity decelerates it
-          dropState.vy -= 0.35;
+          // Liquid siphoned upwards, spout grows while gravity decelerates it smoothly
+          dropState.vy -= 0.08;
           dropState.spoutHeight += dropState.vy;
 
           if (dropState.spoutHeight > 0) {
             // Draw visual 2D silhouette of vertical water jet (curved organic column, wide base)
             ctx.beginPath();
-            ctx.fillStyle = 'rgba(0, 209, 255, 0.85)';
+            ctx.fillStyle = `rgba(${activeThemeRef.current.glowRgb}, 0.85)`;
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
             ctx.lineWidth = 1;
 
@@ -622,7 +743,7 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
             // Peak reached! Separate single daughter drop (bead) at peak apex, collapse spout
             dropState.phase = 'bead_rise';
             dropState.beadY = targetY - dropState.spoutHeight;
-            dropState.beadVy = -2.2; // secondary upward pop
+            dropState.beadVy = -1.8; // stronger secondary upward floaty pop
             dropState.beadVisible = true;
           }
         }
@@ -630,11 +751,11 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
         if (dropState.phase === 'bead_rise' || dropState.phase === 'bead_fall') {
           // Column jet retracts back downwards to join water volume
           if (dropState.spoutHeight > 0) {
-            dropState.spoutHeight = Math.max(0, dropState.spoutHeight - 5.5);
+            dropState.spoutHeight = Math.max(0, dropState.spoutHeight - 1.5);
 
             if (dropState.spoutHeight > 0) {
               ctx.beginPath();
-              ctx.fillStyle = 'rgba(0, 209, 255, 0.7)';
+              ctx.fillStyle = `rgba(${activeThemeRef.current.glowRgb}, 0.7)`;
               ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
               ctx.lineWidth = 0.8;
 
@@ -654,27 +775,36 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
 
           // Separate bead particle continues trajectory under gravity
           if (dropState.beadVisible) {
-            dropState.beadVy += 0.22; // gravity active
+            dropState.beadVy += 0.04; // gravity active, floatier physics
             dropState.beadY += dropState.beadVy;
 
             if (dropState.beadVy > 0) {
               dropState.phase = 'bead_fall';
             }
 
-            // Draw glossy circular daughter bead (white highlights)
+            // Draw glossy circular daughter bead (with gorgeous fluid gradient)
+            const beadGrad = ctx.createRadialGradient(
+              centerX - 1, dropState.beadY - 1, 0.5,
+              centerX, dropState.beadY, 4
+            );
+            beadGrad.addColorStop(0, '#ffffff');
+            beadGrad.addColorStop(0.3, `rgba(${activeThemeRef.current.glowRgb}, 0.9)`);
+            beadGrad.addColorStop(1, `rgba(${activeThemeRef.current.glowRgbSecondary || '0, 130, 255'}, 0.95)`);
+
             ctx.beginPath();
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-            ctx.strokeStyle = '#00d1ff';
-            ctx.lineWidth = 1;
-            ctx.arc(centerX, dropState.beadY, 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = beadGrad;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.lineWidth = 0.75;
+            ctx.arc(centerX, dropState.beadY, 4, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
-            // Glare highlight spot
+            // Distinct sharp curved glare overlay
             ctx.beginPath();
-            ctx.fillStyle = '#ffffff';
-            ctx.arc(centerX - 1, dropState.beadY - 1, 1, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.lineWidth = 0.5;
+            ctx.arc(centerX, dropState.beadY, 2.5, -Math.PI * 0.75, -Math.PI * 0.25);
+            ctx.stroke();
 
             // Secondary splash impact triggers when bead strikes surface level
             if (dropState.beadY >= targetY) {
@@ -687,7 +817,7 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
 
         if (dropState.phase === 'secondary_impact') {
           // Secondary bead splash! Trigger tighter delicate wave rings
-          addRipple(centerX, targetY, 18, 0.065, 3.0);
+          addRipple(centerX, targetY, 12, 0.065, 2.0);
           
           // Tiny secondary splash particles
           for (let i = 0; i < 12; i++) {
@@ -700,7 +830,7 @@ export default function WaterBackground({ activeSection }: WaterBackgroundProps)
               speedX: Math.cos(angle) * force,
               speedY: Math.sin(angle) * force - 0.5,
               opacity: 0.9,
-              color: '#00d1ff'
+              color: activeThemeRef.current.glowMain
             });
           }
 

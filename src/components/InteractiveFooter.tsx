@@ -5,6 +5,43 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Phone, Linkedin, Github, Send, Sparkles, Terminal, Copy, Check } from 'lucide-react';
 import { contactInfo, fullName } from '../data';
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const colLeftVariants = {
+  hidden: { opacity: 0, x: -30 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 100,
+      damping: 15,
+    },
+  },
+};
+
+const colRightVariants = {
+  hidden: { opacity: 0, x: 30 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 100,
+      damping: 15,
+    },
+  },
+};
+
 export default function InteractiveFooter() {
   const [name, setName] = useState('');
   const [company, setCompany] = useState('');
@@ -71,10 +108,16 @@ export default function InteractiveFooter() {
   return (
     <section className="relative py-24 w-full max-w-6xl mx-auto px-4 sm:px-8 z-20">
       
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
+      >
         
         {/* Contact details narrative Column */}
-        <div className="lg:col-span-12 xl:col-span-5 space-y-8">
+        <motion.div variants={colLeftVariants} className="lg:col-span-12 xl:col-span-5 space-y-8">
           <div className="font-mono text-xs text-[#00d1ff] tracking-[0.4em] uppercase mb-1">
             // UNIFIED COMMUNICATION
           </div>
@@ -156,10 +199,10 @@ export default function InteractiveFooter() {
               GitHub
             </a>
           </div>
-        </div>
+        </motion.div>
 
         {/* Contact form Column */}
-        <div className="lg:col-span-12 xl:col-span-7">
+        <motion.div variants={colRightVariants} className="lg:col-span-12 xl:col-span-7">
           <div className="bg-[#0a0a0d] border border-white/10 rounded-xl p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-8 h-8 pointer-events-none border-t border-r border-[#00d1ff]/10 rounded-tr-xl" />
             
@@ -295,9 +338,9 @@ export default function InteractiveFooter() {
             </AnimatePresence>
 
           </div>
-        </div>
+        </motion.div>
 
-      </div>
+      </motion.div>
 
       {/* Corporate Signatures Footer */}
       <footer className="w-full pt-16 mt-20 border-t border-white/5">

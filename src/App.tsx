@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { AnimatePresence, motion, useScroll, useVelocity, useTransform, useSpring } from 'motion/react';
+import { AnimatePresence, motion, useScroll, useVelocity } from 'motion/react';
 import { 
   Terminal, 
   ShieldCheck, 
@@ -44,6 +44,36 @@ export default function App() {
   const [isSynthPlaying, setIsSynthPlaying] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [velocityVal, setVelocityVal] = useState(0);
+  const [localHours, setLocalHours] = useState(0);
+  const [localTimeStr, setLocalTimeStr] = useState('');
+  const [timeProfile, setTimeProfile] = useState('MIDNIGHT_NEBULA');
+
+  // Unified clock mechanism for real-time local time tracking and theme alignment
+  useEffect(() => {
+    const updateTime = () => {
+      const date = new Date();
+      const hour = date.getHours();
+      setLocalHours(hour);
+
+      const formatField = (num: number) => num.toString().padStart(2, '0');
+      const timeString = `${formatField(hour)}:${formatField(date.getMinutes())}:${formatField(date.getSeconds())}`;
+      setLocalTimeStr(timeString);
+
+      if (hour >= 5 && hour < 11) {
+        setTimeProfile('DAWN_SUNRISE');
+      } else if (hour >= 11 && hour < 17) {
+        setTimeProfile('OCEAN_OCEANIC');
+      } else if (hour >= 17 && hour < 21) {
+        setTimeProfile('SUNSET_TWILIGHT');
+      } else {
+        setTimeProfile('MIDNIGHT_NEBULA');
+      }
+    };
+
+    updateTime();
+    const timerId = setInterval(updateTime, 1000);
+    return () => clearInterval(timerId);
+  }, []);
 
   // Ref tracking previous scroll position to selectively trigger sound transitions
   const prevSectionRef = useRef<number>(0);
@@ -56,7 +86,7 @@ export default function App() {
     }
   }, [activeSection]);
 
-  // Velocity-based motion blur calculations using Framer Motion hooks
+  // Velocity-based scroll tracking using Framer Motion hooks
   const { scrollY } = useScroll();
   const scrollVelocity = useVelocity(scrollY);
 
@@ -66,11 +96,6 @@ export default function App() {
       setVelocityVal(Math.round(latest));
     });
   }, [scrollVelocity]);
-
-  // Map movement velocity values to a precise blur radius (e.g. up to 6px blur on extreme scrolls)
-  const rawBlur = useTransform(scrollVelocity, [-3000, 0, 3000], [6, 0, 6]);
-  const blurLevel = useSpring(rawBlur, { stiffness: 75, damping: 28 });
-  const blurFilter = useTransform(blurLevel, (v) => `blur(${Math.min(v, 8)}px)`);
 
   const toggleAmbientSynth = () => {
     if (isSynthPlaying) {
@@ -488,32 +513,11 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Dynamic Telemetry Debug HUD on bottom-left */}
-      <div className={`fixed bottom-6 left-6 z-40 hidden md:flex flex-col gap-1.5 p-3.5 bg-[#050505]/85 backdrop-blur-md border border-white/10 rounded-none shadow-2xl transition-all duration-700 ease-in-out font-mono select-none ${
-        activeSection > 0 ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-6 pointer-events-none'
-      }`}>
-        <div className="flex items-center gap-2 border-b border-white/5 pb-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#00d1ff] animate-pulse" />
-          <span className="text-[9px] text-[#00d1ff] uppercase tracking-widest font-black">SYS.VELOCITY.LOG</span>
-        </div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[9px] min-w-[125px]">
-          <span className="text-white/45">SCROLL VELO:</span>
-          <span className="text-[#00d1ff] text-right font-semibold">{velocityVal} px/s</span>
-          <span className="text-white/45">SENS.RAD:</span>
-          <span className="text-white/70 text-right">0.45 VIEW</span>
-          <span className="text-white/45">CUR.PULSE:</span>
-          <span className={`text-right ${velocityVal !== 0 ? 'text-[#00d1ff] animate-pulse font-bold' : 'text-white/50'}`}>
-            {velocityVal !== 0 ? 'ACTIVE_DRIFT' : 'IDLE_STATIC'}
-          </span>
-        </div>
-      </div>
-
       {/* Floating Interactive 2D/3D Hybrid Water Ripples Background */}
-      <WaterBackground activeSection={activeSection} />
+      <WaterBackground activeSection={activeSection} localHours={localHours} />
 
       {/* Main Single Screen Layout Narrative */}
       <motion.main 
-        style={{ filter: blurFilter }} 
         onPanEnd={handlePanEnd}
         className="relative z-10 w-full overflow-hidden"
       >
@@ -556,15 +560,6 @@ export default function App() {
                 Systems Engineer &bull; Noida, IN
               </p>
             </motion.div>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.65 }}
-              transition={{ duration: 2.0, delay: 1.0 }}
-              className="font-sans text-xs sm:text-sm text-gray-400 max-w-sm leading-relaxed"
-            >
-              Interactive fluid canvas active. Tap or click anywhere on the dark surface to generate physical wave ripples.
-            </motion.p>
           </div>
 
           {/* Bottom Activation Controls: Flow trigger enter + Bounce bounce */}
@@ -574,13 +569,6 @@ export default function App() {
             transition={{ duration: 1.4, delay: 1.4, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center gap-5"
           >
-            <button
-              onClick={() => scrollToRef(heroRef)}
-              className="px-6 py-3 bg-[#00d1ff]/10 border border-[#00d1ff]/40 text-xs font-mono text-[#00d1ff] uppercase tracking-[0.25em] hover:bg-[#00d1ff] hover:text-black hover:shadow-[0_0_20px_rgba(0,209,255,0.4)] hover:border-transparent transition-all rounded-none cursor-pointer"
-            >
-              Enter Archive
-            </button>
-            
             <div 
               onClick={() => scrollToRef(heroRef)}
               className="cursor-pointer group flex flex-col items-center gap-2 text-white/30 hover:text-[#00d1ff] transition-colors"

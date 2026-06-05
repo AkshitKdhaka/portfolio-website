@@ -17,6 +17,29 @@ const containerVariants = {
   },
 };
 
+const sectionContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const headerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1] as const,
+    },
+  },
+};
+
 const itemVariants = {
   hidden: { y: 15, opacity: 0 },
   visible: {
@@ -180,42 +203,49 @@ export default function FoundationSect() {
   return (
     <section className="relative py-24 w-full max-w-6xl mx-auto px-4 sm:px-8 z-20">
       
-      {/* Floating Download Resume Button */}
-      <div className="absolute top-8 right-4 sm:right-8 z-30">
-        <motion.button
-          onClick={generateResumePDF}
-          whileHover={{ scale: 1.05, y: -2 }}
-          whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-[#0a0a0d] border border-[#00d1ff]/20 hover:border-[#00d1ff]/80 text-white hover:text-[#00d1ff] rounded-xl font-mono text-xs uppercase tracking-wide shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_15px_rgba(0,209,255,0.25)] transition-all duration-300 cursor-pointer"
-          aria-label="Download generated PDF Resume"
-          title="Download PDF Resume"
-        >
-          <FileDown className="w-4 h-4 text-[#00d1ff]" />
-          <span className="hidden sm:inline">Download Resume</span>
-          <span className="inline sm:hidden">Download</span>
-        </motion.button>
-      </div>
-
-      {/* Narrative Section Header */}
-      <div className="mb-20 flex flex-col items-center text-center">
-        <div className="font-mono text-xs text-[#00d1ff] tracking-[0.4em] uppercase mb-3">
-          // CHAPTER III
+      <motion.div
+        variants={sectionContainerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="w-full"
+      >
+        {/* Floating Download Resume Button */}
+        <div className="absolute top-8 right-4 sm:right-8 z-30">
+          <motion.button
+            onClick={generateResumePDF}
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-[#0a0a0d] border border-[#00d1ff]/20 hover:border-[#00d1ff]/80 text-white hover:text-[#00d1ff] rounded-xl font-mono text-xs uppercase tracking-wide shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_15px_rgba(0,209,255,0.25)] transition-all duration-300 cursor-pointer"
+            aria-label="Download generated PDF Resume"
+            title="Download PDF Resume"
+          >
+            <FileDown className="w-4 h-4 text-[#00d1ff]" />
+            <span className="hidden sm:inline">Download Resume</span>
+            <span className="inline sm:hidden">Download</span>
+          </motion.button>
         </div>
-        <h2 className="font-display text-4xl sm:text-5xl font-black text-white uppercase tracking-wider">
-          THE FOUNDATION
-        </h2>
-        <p className="font-sans text-base sm:text-lg text-gray-400 max-w-2xl mt-4">
-          A rigid look at technical tooling and academic background. Configured to deliver extreme system speed and automated deployment.
-        </p>
-        <div className="w-16 h-1 bg-[#00d1ff] mt-6 rounded-full shadow-[0_0_15px_rgba(0,209,255,0.6)]"></div>
-      </div>
 
-      {/* SUB-SECTION 1: TECHNICAL STACK */}
-      <div className="mb-10 flex items-center gap-3 border-b border-white/10 pb-3">
-        <span className="font-mono text-xs text-[#00d1ff] tracking-[0.3em] uppercase">
-          // SYS.INFRASTRUCTURE : TECH STACK
-        </span>
-      </div>
+        {/* Narrative Section Header */}
+        <motion.div variants={headerVariants} className="mb-20 flex flex-col items-center text-center">
+          <div className="font-mono text-xs text-[#00d1ff] tracking-[0.4em] uppercase mb-3">
+            // CHAPTER III
+          </div>
+          <h2 className="font-display text-4xl sm:text-5xl font-black text-white uppercase tracking-wider">
+            THE FOUNDATION
+          </h2>
+          <p className="font-sans text-base sm:text-lg text-gray-400 max-w-2xl mt-4">
+            A rigid look at technical tooling and academic background. Configured to deliver extreme system speed and automated deployment.
+          </p>
+          <div className="w-16 h-1 bg-[#00d1ff] mt-6 rounded-full shadow-[0_0_15px_rgba(0,209,255,0.6)]"></div>
+        </motion.div>
+
+        {/* SUB-SECTION 1: TECHNICAL STACK */}
+        <motion.div variants={headerVariants} className="mb-10 flex items-center gap-3 border-b border-white/10 pb-3">
+          <span className="font-mono text-xs text-[#00d1ff] tracking-[0.3em] uppercase">
+            // SYS.INFRASTRUCTURE : TECH STACK
+          </span>
+        </motion.div>
 
       <motion.div 
         className="grid grid-cols-1 md:grid-cols-12 gap-6 mt-6 mb-24"
@@ -825,6 +855,7 @@ export default function FoundationSect() {
           </div>
         </motion.div>
 
+      </motion.div>
       </motion.div>
 
     </section>

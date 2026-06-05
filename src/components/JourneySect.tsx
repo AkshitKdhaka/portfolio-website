@@ -7,10 +7,24 @@ import { experiences } from '../data';
 import { Experience } from '../types';
 
 const containerVariants = {
-  hidden: {},
+  hidden: { opacity: 0 },
   visible: {
+    opacity: 1,
     transition: {
-      staggerChildren: 0.15,
+      staggerChildren: 0.12,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const headerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1] as const,
     },
   },
 };
@@ -33,41 +47,54 @@ export default function JourneySect() {
   return (
     <section className="relative py-24 w-full max-w-6xl mx-auto px-4 sm:px-8 z-20">
       
-      {/* Narrative Section Header */}
-      <div className="mb-16 flex flex-col items-center text-center">
-        <div className="font-mono text-xs text-[#00d1ff] tracking-[0.4em] uppercase mb-3">
-          // CHAPTER I
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="w-full"
+      >
+        {/* Narrative Section Header */}
+        <div className="mb-16 flex flex-col items-center text-center">
+          <motion.div 
+            variants={headerVariants}
+            className="font-mono text-xs text-[#00d1ff] tracking-[0.4em] uppercase mb-3"
+          >
+            // CHAPTER I
+          </motion.div>
+          <motion.h2 
+            variants={headerVariants}
+            className="font-display text-3xl sm:text-5xl font-black text-white uppercase tracking-wider"
+          >
+            Professional Journey
+          </motion.h2>
+          <motion.p 
+            variants={headerVariants}
+            className="font-sans text-base sm:text-lg text-gray-400 max-w-2xl mt-4"
+          >
+            A narrative of engineering milestones—bringing robust database scaling, server efficiency audits, and Next.js frontends to production.
+          </motion.p>
+          <motion.div 
+            variants={headerVariants}
+            className="w-16 h-1 bg-[#00d1ff] mt-6 rounded-full shadow-[0_0_15px_rgba(0,209,255,0.6)]"
+          />
         </div>
-        <h2 className="font-display text-3xl sm:text-5xl font-black text-white uppercase tracking-wider">
-          Professional Journey
-        </h2>
-        <p className="font-sans text-base sm:text-lg text-gray-400 max-w-2xl mt-4">
-          A narrative of engineering milestones—bringing robust database scaling, server efficiency audits, and Next.js frontends to production.
-        </p>
-        <div className="w-16 h-1 bg-[#00d1ff] mt-6 rounded-full shadow-[0_0_15px_rgba(0,209,255,0.6)]"></div>
-      </div>
 
-      <div className="relative pl-2 sm:pl-8 md:pl-0 mt-16 max-w-5xl mx-auto">
-        {/* Glowing vertical 3D timeline track */}
-        <div className="absolute left-2.5 sm:left-8 md:left-1/2 top-4 bottom-4 w-[2px] bg-gradient-to-b from-[#00d1ff]/40 via-[#151515]/10 to-transparent -translate-x-1/2 hidden md:block" />
+        <div className="relative pl-2 sm:pl-8 md:pl-0 mt-16 max-w-5xl mx-auto">
+          {/* Glowing vertical 3D timeline track */}
+          <div className="absolute left-2.5 sm:left-8 md:left-1/2 top-4 bottom-4 w-[2px] bg-gradient-to-b from-[#00d1ff]/40 via-[#151515]/10 to-transparent -translate-x-1/2 hidden md:block" />
 
-        <motion.div 
-          className="space-y-16"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          {experiences.map((exp: Experience, idx: number) => {
-            const isLatest = idx === 0;
-            const isLeft = idx % 2 === 0;
+          <div className="space-y-16">
+            {experiences.map((exp: Experience, idx: number) => {
+              const isLatest = idx === 0;
+              const isLeft = idx % 2 === 0;
 
-            return (
-              <motion.div 
-                key={`${exp.company}-${idx}`}
-                className={`relative flex flex-col md:flex-row ${isLeft ? 'md:flex-row-reverse' : ''} justify-between items-stretch w-full`}
-                variants={cardEntryVariants}
-              >
+              return (
+                <motion.div 
+                  key={`${exp.company}-${idx}`}
+                  className={`relative flex flex-col md:flex-row ${isLeft ? 'md:flex-row-reverse' : ''} justify-between items-stretch w-full`}
+                  variants={cardEntryVariants}
+                >
                 
                 {/* Meta details column */}
                 <div className={`w-full md:w-[46%] flex flex-col justify-center ${isLeft ? 'md:text-left md:items-start' : 'md:text-right md:items-end'} mb-4 md:mb-0`}>
@@ -148,9 +175,9 @@ export default function JourneySect() {
               </motion.div>
             );
           })}
-        </motion.div>
+        </div>
       </div>
-
+      </motion.div>
     </section>
   );
 }

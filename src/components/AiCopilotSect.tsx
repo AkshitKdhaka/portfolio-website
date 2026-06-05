@@ -20,6 +20,43 @@ import {
 } from 'lucide-react';
 import { projects } from '../data';
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const headerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1] as const,
+    },
+  },
+};
+
+const panelVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 100,
+      damping: 16,
+      mass: 0.8,
+    },
+  },
+};
+
 interface ChatMessage {
   sender: 'user' | 'ai';
   text: string;
@@ -151,22 +188,29 @@ export default function AiCopilotSect() {
   return (
     <section className="relative py-24 w-full max-w-6xl mx-auto px-4 sm:px-8 z-20">
       
-      {/* Narrative Section Header */}
-      <div className="mb-14 flex flex-col items-center text-center">
-        <div className="font-mono text-xs text-[#00d1ff] tracking-[0.4em] uppercase mb-3">
-          // CO-PILOT TERMINAL
-        </div>
-        <h2 className="font-display text-4xl sm:text-5xl font-black text-white uppercase tracking-wider">
-          AI RECRUITER SUITE
-        </h2>
-        <p className="font-sans text-base sm:text-lg text-gray-400 max-w-2xl mt-4">
-          Unleash autonomous co-pilot features powered by Gemini to chat with my background agents, customize resumes to your requirements instantly, and inspect architectural diagrams.
-        </p>
-        <div className="w-16 h-1 bg-[#00d1ff] mt-6 rounded-full shadow-[0_0_15px_rgba(0,209,255,0.6)]"></div>
-      </div>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="w-full"
+      >
+        {/* Narrative Section Header */}
+        <motion.div variants={headerVariants} className="mb-14 flex flex-col items-center text-center">
+          <div className="font-mono text-xs text-[#00d1ff] tracking-[0.4em] uppercase mb-3">
+            // CO-PILOT TERMINAL
+          </div>
+          <h2 className="font-display text-4xl sm:text-5xl font-black text-white uppercase tracking-wider">
+            AI RECRUITER SUITE
+          </h2>
+          <p className="font-sans text-base sm:text-lg text-gray-400 max-w-2xl mt-4">
+            Unleash autonomous co-pilot features powered by Gemini to chat with my background agents, customize resumes to your requirements instantly, and inspect architectural diagrams.
+          </p>
+          <div className="w-16 h-1 bg-[#00d1ff] mt-6 rounded-full shadow-[0_0_15px_rgba(0,209,255,0.6)]"></div>
+        </motion.div>
 
-      {/* Feature Navigation Tabs */}
-      <div className="flex flex-wrap justify-center gap-3 mb-12">
+        {/* Feature Navigation Tabs */}
+        <motion.div variants={headerVariants} className="flex flex-wrap justify-center gap-3 mb-12">
         <button
           onClick={() => { setActiveSubTab('chat'); setErrorMessage(null); }}
           className={`flex items-center gap-2 px-5 py-3 transition-all rounded-lg font-mono text-xs uppercase tracking-wider ${
@@ -202,7 +246,7 @@ export default function AiCopilotSect() {
           <Layers className="w-4 h-4" />
           System Explainer
         </button>
-      </div>
+      </motion.div>
 
       {/* Display warnings if backend credentials are missing */}
       <AnimatePresence>
@@ -226,7 +270,7 @@ export default function AiCopilotSect() {
       </AnimatePresence>
 
       {/* Feature Panel Wrapper */}
-      <div className="bg-[#0a0a0d] border border-white/10 p-6 sm:p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+      <motion.div variants={panelVariants} className="bg-[#0a0a0d] border border-white/10 p-6 sm:p-8 rounded-2xl shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none border-t border-r border-[#00d1ff]/10 rounded-tr-2xl" />
 
         {/* TAB 1: RECRUITER COMPANION (CHAT AGENT) */}
@@ -539,7 +583,8 @@ export default function AiCopilotSect() {
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
+      </motion.div>
 
     </section>
   );
