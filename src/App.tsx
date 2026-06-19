@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { AnimatePresence, motion, useScroll, useVelocity } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { 
   Terminal, 
   ShieldCheck, 
@@ -18,11 +18,18 @@ import {
   Layers,
   Sparkles,
   Menu,
-  X
+  X,
+  Play,
+  Pause,
+  ArrowUp
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const WaterBackground = dynamic(() => import('./components/WaterBackground'), {
+  ssr: false,
+});
+
+const CustomCursor = dynamic(() => import('./components/CustomCursor'), {
   ssr: false,
 });
 
@@ -38,12 +45,11 @@ import { ambientSynth } from './lib/ambientSynth';
 
 export default function App() {
   const [activeSection, setActiveSection] = useState(0);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isDemoMode, setIsDemoMode] = useState(false);
   const [isSourceOpen, setIsSourceOpen] = useState(false);
   const [webGlSupported, setWebGlSupported] = useState(true);
   const [isSynthPlaying, setIsSynthPlaying] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [velocityVal, setVelocityVal] = useState(0);
   const [localHours, setLocalHours] = useState(0);
   const [localTimeStr, setLocalTimeStr] = useState('');
   const [timeProfile, setTimeProfile] = useState('MIDNIGHT_NEBULA');
@@ -85,17 +91,6 @@ export default function App() {
       prevSectionRef.current = activeSection;
     }
   }, [activeSection]);
-
-  // Velocity-based scroll tracking using Framer Motion hooks
-  const { scrollY } = useScroll();
-  const scrollVelocity = useVelocity(scrollY);
-
-  // Subscribe to raw motion values to update telemetry state without slowing React frames
-  useEffect(() => {
-    return scrollVelocity.on("change", (latest) => {
-      setVelocityVal(Math.round(latest));
-    });
-  }, [scrollVelocity]);
 
   const toggleAmbientSynth = () => {
     if (isSynthPlaying) {
@@ -140,64 +135,69 @@ export default function App() {
     }
   }, []);
 
-  // Track scroll section entries of the portfolio using a high-precision scroll position calculation
+  // Modern, high-performance IntersectionObserver for section detection without forced layouts
   useEffect(() => {
-    const handleScroll = () => {
-      const sections = [
-        { ref: portalRef, index: 0 },
-        { ref: heroRef, index: 1 },
-        { ref: journeyRef, index: 2 },
-        { ref: workshopRef, index: 3 },
-        { ref: foundationRef, index: 4 },
-        { ref: aiCopilotRef, index: 5 },
-        { ref: contactRef, index: 6 }
-      ];
+    const sections = [
+      { ref: portalRef, index: 0 },
+      { ref: heroRef, index: 1 },
+      { ref: journeyRef, index: 2 },
+      { ref: workshopRef, index: 3 },
+      { ref: foundationRef, index: 4 },
+      { ref: aiCopilotRef, index: 5 },
+      { ref: contactRef, index: 6 }
+    ];
 
-      // Absolute bottom of the page edge-case check
-      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 15;
-      if (isAtBottom) {
-        setActiveSection(6);
-        return;
-      }
+    const observerOptions = {
+      root: null,
+      rootMargin: '-45% 0px -45% 0px',
+      threshold: 0
+    };
 
-      const viewportHeight = window.innerHeight;
-      const triggerPoint = viewportHeight * 0.45; // 45% trigger line from viewport top
-
-      for (let i = 0; i < sections.length; i++) {
-        const ref = sections[i].ref;
-        if (ref.current) {
-          const rect = ref.current.getBoundingClientRect();
-          if (rect.top <= triggerPoint && rect.bottom >= triggerPoint) {
-            setActiveSection(sections[i].index);
-            break;
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const index = sections.find(s => s.ref.current === entry.target)?.index;
+          if (index !== undefined) {
+            setActiveSection((prev) => prev !== index ? index : prev);
           }
         }
+      });
+    };
+
+    const spectator = new IntersectionObserver(observerCallback, observerOptions);
+
+    sections.forEach((section) => {
+      if (section.ref.current) {
+        spectator.observe(section.ref.current);
+      }
+    });
+
+    const handleBottomCheck = () => {
+      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 15;
+      if (isAtBottom) {
+        setActiveSection((prev) => prev !== 6 ? 6 : prev);
       }
     };
-
-    // Calculate initial section on component mount
-    handleScroll();
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll);
+    window.addEventListener('scroll', handleBottomCheck, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
+      spectator.disconnect();
+      window.removeEventListener('scroll', handleBottomCheck);
     };
   }, []);
 
-  // Capture normalized mouse coordinates for interactive parallax tilt
+  // Automated Presentation Demo Mode Effect (slow hands-free scroll)
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = (e.clientY / window.innerHeight) * 2 - 1;
-      setMousePos({ x, y });
-    };
+    if (!isDemoMode) return;
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+    const interval = setInterval(() => {
+      const nextIndex = (activeSection + 1) % 7;
+      const targetRefs = [portalRef, heroRef, journeyRef, workshopRef, foundationRef, aiCopilotRef, contactRef];
+      scrollToRef(targetRefs[nextIndex]);
+    }, 7500); // 7.5 seconds per section for a perfectly legible, relaxed tour
+
+    return () => clearInterval(interval);
+  }, [isDemoMode, activeSection]);
 
   // Smooth scroll helper
   const scrollToRef = (ref: React.RefObject<HTMLDivElement | null>) => {
@@ -247,39 +247,8 @@ export default function App() {
     };
   }, [activeSection]);
 
-  // Framer Motion Gesture Swiping support for touch-enabled devices
-  const handlePanEnd = (event: any, info: any) => {
-    // Threshold bounds for vertical swipe actions
-    const thresholdY = 60; // px
-    const thresholdVelocity = 400; // px/sec
-
-    // Guard against accidental swipes on nested interactive scroll zones
-    const targetElement = event.target as HTMLElement;
-    if (
-      targetElement &&
-      (targetElement.tagName === 'INPUT' ||
-       targetElement.tagName === 'TEXTAREA' ||
-       targetElement.closest('.recruiter-chat-scroll') ||
-       targetElement.closest('.modal-content-scroll') ||
-       targetElement.closest('pre') ||
-       targetElement.isContentEditable)
-    ) {
-      return;
-    }
-
-    if (info.offset.y < -thresholdY || info.velocity.y < -thresholdVelocity) {
-      // Swipe Up -> Transition to next section below
-      const nextIndex = Math.min(activeSection + 1, navItems.length - 1);
-      scrollToRef(navItems[nextIndex].ref);
-    } else if (info.offset.y > thresholdY || info.velocity.y > thresholdVelocity) {
-      // Swipe Down -> Transition to previous section above
-      const prevIndex = Math.max(activeSection - 1, 0);
-      scrollToRef(navItems[prevIndex].ref);
-    }
-  };
-
   return (
-    <div className="relative bg-[#040406] text-on-background selection:bg-primary-container selection:text-black">
+    <div className="relative bg-[#040406] text-on-background selection:bg-primary-container selection:text-black md:cursor-none">
       
       {/* 3D Tech Glow background with grids removed per user request */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -289,10 +258,8 @@ export default function App() {
         <div className="absolute top-[40%] right-[10%] w-[300px] h-[300px] bg-[#7000ff] rounded-full blur-[110px] opacity-10" />
       </div>
 
-      {/* Floating Tactical Top Navigation Header - Fades in past portal screen */}
-      <header className={`fixed top-0 left-0 right-0 z-40 bg-[#050505]/40 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center select-none transition-all duration-700 ease-in-out ${
-        activeSection > 0 ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-4 pointer-events-none'
-      }`}>
+      {/* Floating Tactical Top Navigation Header - Elevated status bar */}
+      <header className="fixed top-0 left-0 right-0 z-40 bg-[#050505]/40 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center select-none transition-all duration-700 ease-in-out opacity-100 translate-y-0 pointer-events-auto">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full border border-[#00d1ff] flex items-center justify-center">
             <div className="w-3.5 h-3.5 bg-[#00d1ff] rounded-sm rotate-45 shadow-[0_0_10px_#00d1ff]"></div>
@@ -309,7 +276,9 @@ export default function App() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00d1ff] opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00d1ff]"></span>
           </span>
-          <span className="font-mono text-[9px] text-[#00d1ff] tracking-wider uppercase">Active Dispatch: Noida</span>
+          <span className="font-mono text-[9px] text-[#00d1ff] tracking-wider uppercase">
+            {isDemoMode ? 'Autoplay Presentation Active' : 'Active Dispatch: Noida'}
+          </span>
         </div>
 
         <div className="flex gap-2 sm:gap-3 items-center">
@@ -339,6 +308,28 @@ export default function App() {
                   <span className="w-0.5 h-1 bg-white/40 inline-block" />
                 </div>
                 <span className="uppercase tracking-wider text-[9px]">Ambient Off</span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={() => setIsDemoMode(!isDemoMode)}
+            className={`flex items-center gap-2 px-2.5 py-1.5 border transition-all cursor-pointer text-[10px] font-mono rounded-none ${
+              isDemoMode 
+                ? 'bg-[#00d1ff]/15 border-[#00d1ff] text-[#00d1ff] shadow-[0_0_15px_rgba(0,209,255,0.25)] font-semibold'
+                : 'bg-white/5 border-white/10 text-white/50 hover:text-white hover:border-white/30'
+            }`}
+            title="Toggle Hands-Free Presentation Auto-Scroll"
+          >
+            {isDemoMode ? (
+              <>
+                <Pause className="w-3 h-3 text-[#00d1ff] animate-pulse" />
+                <span className="uppercase tracking-wider text-[9px]">Demo Active</span>
+              </>
+            ) : (
+              <>
+                <Play className="w-3 h-3 text-white/60" />
+                <span className="uppercase tracking-wider text-[9px]">Demo Mode</span>
               </>
             )}
           </button>
@@ -517,10 +508,7 @@ export default function App() {
       <WaterBackground activeSection={activeSection} localHours={localHours} />
 
       {/* Main Single Screen Layout Narrative */}
-      <motion.main 
-        onPanEnd={handlePanEnd}
-        className="relative z-10 w-full overflow-hidden"
-      >
+      <main className="relative z-10 w-full overflow-hidden">
         
         {/* Section 0: Immersive Water Portal */}
         <div 
@@ -655,7 +643,7 @@ export default function App() {
         >
           <InteractiveFooter />
         </motion.div>
-      </motion.main>
+      </main>
 
       {/* Interactive JSON Source Code IDE Overlay modal */}
       <AnimatePresence>
@@ -663,6 +651,27 @@ export default function App() {
           <SourceOverlay onClose={() => setIsSourceOpen(false)} />
         )}
       </AnimatePresence>
+
+      {/* Floating Scroll to Top button */}
+      <AnimatePresence>
+        {activeSection > 0 && (
+          <motion.button
+            key="scroll-top-btn"
+            initial={{ opacity: 0, scale: 0.8, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 15 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 26 }}
+            onClick={() => scrollToRef(portalRef)}
+            className="fixed bottom-6 right-6 z-40 w-11 h-11 bg-[#050508]/85 backdrop-blur-md border border-white/10 hover:border-[#00d1ff] text-white/50 hover:text-[#00d1ff] hover:shadow-[0_0_15px_rgba(0,209,255,0.3)] flex items-center justify-center rounded-lg transition-all focus:outline-none cursor-pointer group active:scale-95"
+            title="Return to Home Portal"
+          >
+            <ArrowUp className="w-5 h-5 transition-transform duration-200 group-hover:-translate-y-0.5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* High-performance, magnetically-interactive custom cursor */}
+      <CustomCursor />
 
     </div>
   );

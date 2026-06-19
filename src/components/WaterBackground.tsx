@@ -343,90 +343,24 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
         return r.amplitude > 0.1 && r.radius < r.maxRadius;
       });
 
-      // 3. Draw Perspective Holographic Cyber Grid
-      // Mesh vertices refract and shift based on live mathematical waves
-      ctx.strokeStyle = `rgba(${activeThemeRef.current.glowRgb}, 0.05)`;
-      ctx.lineWidth = 1;
+      // 3 & 4. Highlight wave node reflections with ultra-fast dynamic specular reflections
+      for (let i = 0; i < ripples.length; i++) {
+        const r = ripples[i];
+        if (r.amplitude > 0.5) {
+          const pulse = Math.min(r.amplitude * 0.008, 0.35);
+          ctx.strokeStyle = `rgba(${activeThemeRef.current.glowRgb}, ${pulse})`;
+          ctx.lineWidth = 1.2 + r.amplitude * 0.04;
+          ctx.beginPath();
+          // Draw circular glowing wave outline directly at screen coordinates
+          ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+          ctx.stroke();
 
-      const gridCols = 44;
-      const gridRows = 30;
-      const cellW = canvas.width / (gridCols - 1);
-      const cellH = canvas.height / (gridRows - 1);
-
-      // Vertical perspective alignment offsets
-      const focalLength = 320;
-      const depthOffset = 180;
-
-      // Store distorted projected grid points to draw clean curved lines
-      const projectedGrid: { sx: number; sy: number; height: number }[][] = [];
-
-      for (let r = 0; r < gridRows; r++) {
-        projectedGrid[r] = [];
-        for (let c = 0; c < gridCols; c++) {
-          const originalX = c * cellW;
-          const originalY = r * cellH;
-
-          // Compute ripple displacement sum
-          let totalZ = 0;
-          let distortX = 0;
-          let distortY = 0;
-
-          for (let i = 0; i < ripples.length; i++) {
-            const rip = ripples[i];
-            const dx = originalX - rip.x;
-            const dy = originalY - rip.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < rip.radius) {
-              const progress = (rip.radius - dist) / rip.radius;
-              if (progress > 0 && progress < 1) {
-                // Decay envelope + sine wave oscillation
-                const wave = Math.sin((rip.radius - dist) * rip.frequency - Math.PI / 2);
-                const envelope = Math.sin(progress * Math.PI);
-                const z = wave * rip.amplitude * envelope;
-                totalZ += z;
-
-                if (dist > 1) {
-                  distortX += (dx / dist) * z * 0.28;
-                  distortY += (dy / dist) * z * 0.28;
-                }
-              }
-            }
-          }
-
-          // 3D Plane coordinates perspective projection
-          const px3d = (originalX - canvas.width / 2) + distortX;
-          const py3d = (originalY - canvas.height / 2) + distortY;
-          const pz3d = totalZ;
-
-          // Slanted 3D surface grid calculation in camera space
-          const slantAngle = 0.45; // Camera viewport pitch look angle
-          const rotatedY = py3d * Math.cos(slantAngle) - pz3d * Math.sin(slantAngle);
-          const rotatedZ = py3d * Math.sin(slantAngle) + pz3d * Math.cos(slantAngle);
-
-          const distanceZ = rotatedZ + focalLength + depthOffset;
-          const scale = focalLength / distanceZ;
-
-          const sx = canvas.width / 2 + px3d * scale;
-          const sy = canvas.height / 2 + rotatedY * scale + 100; // shift downwards
-
-          projectedGrid[r].push({ sx, sy, height: totalZ });
-        }
-      }
-
-      // Draw horizontal and vertical curved lines removed per user request to have a clean water background without grid lines
-
-      // 4. Highlight wave node reflections with dynamic specular circles
-      for (let r = 0; r < gridRows; r += 3) {
-        for (let c = 0; c < gridCols; c += 3) {
-          const pt = projectedGrid[r][c];
-          if (Math.abs(pt.height) > 1.2) {
-            // Bright specularity where wave slope is active
-            const pulse = Math.min(Math.abs(pt.height) * 0.04, 0.45);
-            ctx.fillStyle = `rgba(${activeThemeRef.current.glowRgb}, ${pulse})`;
+          // Add a subtle auxiliary secondary highlight reflection ring for natural caustics variance 
+          if (r.radius > 30) {
+            ctx.strokeStyle = `rgba(${activeThemeRef.current.glowRgbSecondary}, ${pulse * 0.65})`;
             ctx.beginPath();
-            ctx.arc(pt.sx, pt.sy, 1 + Math.abs(pt.height) * 0.1, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.arc(r.x, r.y, r.radius - 20, 0, Math.PI * 2);
+            ctx.stroke();
           }
         }
       }
@@ -477,23 +411,9 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = canvas.height;
 
-        // Apply interactive water refraction offset of particles under waves
-        let rx = p.x;
-        let ry = p.y;
-        for (let i = 0; i < ripples.length; i++) {
-          const rip = ripples[i];
-          const dx = p.x - rip.x;
-          const dy = p.y - rip.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < rip.radius) {
-            const k = (rip.radius - dist) / rip.radius;
-            const w = Math.sin((rip.radius - dist) * rip.frequency) * rip.amplitude * Math.sin(k * Math.PI);
-            if (dist > 0.5) {
-              rx += (dx / dist) * w * 0.35;
-              ry += (dy / dist) * w * 0.35;
-            }
-          }
-        }
+        // Clean, direct screen coordinates (skip heavy wave maths for secondary ambient particles)
+        const rx = p.x;
+        const ry = p.y;
 
         ctx.fillStyle = p.color;
         ctx.globalAlpha = p.opacity;
@@ -504,7 +424,10 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
       });
 
       // 7. Update and Draw Dispersed Splash Ring Particles (from Droplet Landing)
-      const particleArr = particlesRef.current;
+      let particleArr = particlesRef.current;
+      if (particleArr.length > 200) {
+        particleArr = particleArr.slice(-200);
+      }
       particlesRef.current = particleArr.filter((p) => {
         p.x += p.speedX;
         p.y += p.speedY;
@@ -522,7 +445,10 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
       });
 
       // 8. Update and Draw Cursor-Following Bioluminescent Bubbles & Plankton
-      const trail = trailParticlesRef.current;
+      let trail = trailParticlesRef.current;
+      if (trail.length > 150) {
+        trail = trail.slice(-150);
+      }
       trailParticlesRef.current = trail.filter((tp) => {
         // Apply vertical rise speed (floats up)
         tp.y += tp.speedY;
@@ -540,23 +466,9 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
 
         tp.opacity -= tp.decay;
 
-        // Apply interactive water refraction distortion from current live ripples
-        let rx = tp.x;
-        let ry = tp.y;
-        for (let i = 0; i < ripples.length; i++) {
-          const rip = ripples[i];
-          const dx = tp.x - rip.x;
-          const dy = tp.y - rip.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < rip.radius) {
-            const k = (rip.radius - dist) / rip.radius;
-            const w = Math.sin((rip.radius - dist) * rip.frequency) * rip.amplitude * Math.sin(k * Math.PI);
-            if (dist > 0.5) {
-              rx += (dx / dist) * w * 0.35;
-              ry += (dy / dist) * w * 0.35;
-            }
-          }
-        }
+        // Clean, direct screen coordinates (skip heavy wave maths for trailing bubbles in motion)
+        const rx = tp.x;
+        const ry = tp.y;
 
         ctx.globalAlpha = Math.max(tp.opacity, 0);
 

@@ -527,36 +527,18 @@ export default function FoundationSect() {
             {gitStats?.contributions && gitStats.contributions.length > 0 && (
               <div className="md:col-span-12 border-t border-white/10 pt-8 mt-4 animate-fade-in">
                 
-                {/* Heatmap Section Title with Year Filter */}
+                {/* Heatmap Section Title with only latest year */}
                 <div className="flex flex-col xl:flex-row justify-between xl:items-center gap-4 mb-5">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                       <Activity className="w-3.5 h-3.5 text-[#00d1ff] animate-pulse" />
                       <h4 className="font-mono text-[11px] text-[#00d1ff] tracking-widest uppercase">
-                        // ANALYZING CORE ACTIVITY CALENDAR : {selectedYear}
+                        // ANALYZING CORE ACTIVITY CALENDAR
                       </h4>
                     </div>
                     <span className="font-mono text-[9.5px] text-gray-500 uppercase">
                       Active calendar nodes: {gitStats.contributions.length} days synced
                     </span>
-                  </div>
-                  
-                  {/* Futuristic Interactive Year Toggles Filter */}
-                  <div className="flex flex-wrap items-center gap-1.5 bg-[#121217]/60 border border-white/5 p-1 rounded-lg self-start xl:self-auto">
-                    {[2026, 2025, 2024, 2023, 2022].map((yr) => (
-                      <button
-                        key={yr}
-                        onClick={() => setSelectedYear(yr)}
-                        disabled={refreshing}
-                        className={`px-3 py-1 font-mono text-[9.5px] tracking-wider uppercase rounded transition-all duration-200 cursor-pointer disabled:opacity-40 ${
-                          selectedYear === yr
-                            ? 'bg-[#00d1ff] text-[#030406] font-bold shadow-[0_0_10px_rgba(0,209,255,0.4)]'
-                            : 'text-gray-400 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        {yr === new Date().getFullYear() ? `Latest (${yr})` : yr}
-                      </button>
-                    ))}
                   </div>
                 </div>
 

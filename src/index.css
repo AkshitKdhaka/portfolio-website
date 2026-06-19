@@ -44,7 +44,7 @@
 
 /* Custom CSS Scroll styling and custom animations */
 html {
-  scroll-snap-type: y mandatory;
+  /* Removed scroll snap for ultra-fluid native scroll momentum */
 }
 
 html, body {
@@ -58,8 +58,7 @@ html, body {
 }
 
 .snap-section {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+  /* Removed scroll snap for ultra-fluid native scroll momentum */
 }
 
 /* Scrollbar styles */
@@ -99,6 +98,13 @@ html, body {
 
 .glow-heavy {
   animation: glow-pulse 3s infinite;
+}
+
+/* Force hiding standard browser cursors on desktop screens to preserve Custom Cursor integrity */
+@media (min-width: 768px) {
+  *, *::before, *::after {
+    cursor: none !important;
+  }
 }
 
 

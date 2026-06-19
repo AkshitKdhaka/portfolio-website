@@ -51,6 +51,7 @@ export default function InteractiveFooter() {
   const [polishing, setPolishing] = useState(false);
   const [polishError, setPolishError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [emailHover, setEmailHover] = useState(false);
 
   const handleCopyEmail = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -131,38 +132,69 @@ export default function InteractiveFooter() {
           </p>
 
           <div className="space-y-4 pt-4">
-            <a 
-              href={`mailto:${contactInfo.email}`}
-              className="group flex items-center justify-between bg-[#0a0b0d] border border-white/10 hover:border-[#00d1ff]/40 p-4 rounded-xl transition-all duration-300"
+            <div 
+              className="relative group cursor-pointer"
+              onMouseEnter={() => setEmailHover(true)}
+              onMouseLeave={() => setEmailHover(false)}
+              onClick={handleCopyEmail}
             >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-[#00d1ff]/10 flex items-center justify-center text-[#00d1ff] group-hover:scale-110 transition-transform">
-                  <Mail className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="font-mono text-[9px] text-white/40 uppercase block tracking-wider">Secure Email Channel</span>
-                  <span className="font-mono text-sm text-[#00d1ff]">{contactInfo.email}</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleCopyEmail}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-[#00d1ff]/10 hover:border-[#00d1ff]/50 hover:text-[#00d1ff] transition-all duration-200 text-[10px] font-mono text-white/60 focus:outline-none"
-                title="Copy email to clipboard"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-[#00d1ff]" />
-                    <span className="text-[#00d1ff] uppercase tracking-wider text-[9px]">Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span className="uppercase tracking-wider text-[9px]">Copy</span>
-                  </>
+              {/* Custom micro-tooltip absolute popup */}
+              <AnimatePresence>
+                {emailHover && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute -top-11 left-6 z-30 px-3.5 py-1.5 bg-black/95 border border-[#00d1ff]/50 shadow-[0_0_20px_rgba(0,209,255,0.35)] text-white text-[10px] font-mono rounded-lg uppercase tracking-wider pointer-events-none flex items-center gap-2"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-[#00d1ff] animate-pulse" />
+                        <span className="text-[#00d1ff] font-bold">Email Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 text-[#00d1ff]" />
+                        <span>Click to copy email address</span>
+                      </>
+                    )}
+                    {/* Tiny arrow */}
+                    <div className="absolute left-6 -bottom-1 w-2 h-2 bg-black border-r border-b border-[#00d1ff]/30 rotate-45" />
+                  </motion.div>
                 )}
-              </button>
-            </a>
+              </AnimatePresence>
+
+              <div className="group flex items-center justify-between bg-[#0a0b0d] border border-white/10 hover:border-[#00d1ff]/40 p-4 rounded-xl transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-[#00d1ff]/10 flex items-center justify-center text-[#00d1ff] group-hover:scale-110 group-hover:shadow-[0_0_10px_rgba(0,209,255,0.2)] transition-all">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="font-mono text-[9px] text-white/40 uppercase block tracking-wider">Secure Email Channel</span>
+                    <span className="font-mono text-sm text-[#00d1ff] transition-all group-hover:text-white select-all">{contactInfo.email}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleCopyEmail(e); }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-[#00d1ff]/10 hover:border-[#00d1ff]/50 hover:text-[#00d1ff] transition-all duration-200 text-[10px] font-mono text-white/60 focus:outline-none cursor-pointer"
+                  title="Copy email to clipboard"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-[#00d1ff] shrink-0" />
+                      <span className="text-[#00d1ff] uppercase tracking-wider text-[9px]">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-white/55 shrink-0" />
+                      <span className="uppercase tracking-wider text-[9px]">Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
 
             <a 
               href={`tel:${contactInfo.phone}`}
