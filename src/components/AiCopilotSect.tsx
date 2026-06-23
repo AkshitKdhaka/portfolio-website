@@ -116,7 +116,7 @@ export default function AiCopilotSect() {
   }, [chatMessages, loading]);
 
   // Execute Gemini REST call Helper
-  const handleGeminiCall = async (action: string, payload: any) => {
+  const handleGeminiCall = async (action: string, payload: any, onChunk?: (text: string) => void) => {
     setLoading(true);
     setErrorMessage(null);
     try {
@@ -125,11 +125,34 @@ export default function AiCopilotSect() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, payload })
       });
-      const data = await response.json();
+      
       if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: 'Server-side processing failure' }));
         throw new Error(data.error || 'Server-side processing failure');
       }
-      return data.text;
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('Response body is not readable');
+      }
+
+      const decoder = new TextDecoder();
+      let done = false;
+      let accumulatedText = '';
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: !done });
+          accumulatedText += chunk;
+          if (onChunk) {
+            onChunk(accumulatedText);
+          }
+        }
+      }
+
+      return accumulatedText;
     } catch (err: any) {
       console.error(err);
       setErrorMessage(err.message || 'Connecting to Gemini Companion timed out.');
@@ -149,25 +172,37 @@ export default function AiCopilotSect() {
     setChatMessages(newMessages);
     if (!textToSend) setChatInput('');
 
+    // Append an empty AI message first that we will stream into
+    setChatMessages(prev => [...prev, { sender: 'ai' as const, text: '' }]);
+
     const aiResponse = await handleGeminiCall('chat', {
       userMessage: messageText,
       chatHistory: chatMessages
+    }, (currentText) => {
+      setChatMessages(prev => {
+        const updated = [...prev];
+        if (updated.length > 0 && updated[updated.length - 1].sender === 'ai') {
+          updated[updated.length - 1].text = currentText;
+        }
+        return updated;
+      });
     });
 
-    if (aiResponse) {
-      setChatMessages(prev => [...prev, { sender: 'ai' as const, text: aiResponse }]);
+    if (!aiResponse) {
+      // If failed, remove the temporary message
+      setChatMessages(prev => prev.slice(0, -1));
     }
   };
 
   // Perform Resume Tailoring
   const handleTailorResume = async () => {
     if (!jobDescriptionInput.trim() || loading) return;
-    const result = await handleGeminiCall('tailor', {
+    setTailorResult('');
+    await handleGeminiCall('tailor', {
       jobDescription: jobDescriptionInput
+    }, (currentText) => {
+      setTailorResult(currentText);
     });
-    if (result) {
-      setTailorResult(result);
-    }
   };
 
   // Perform Architecture Explanation Routing
@@ -176,13 +211,13 @@ export default function AiCopilotSect() {
     const activeQueryObj = archQueries.find(q => q.id === architectureQueryGroup);
     const queryText = activeQueryObj ? activeQueryObj.query : "Explain scaling";
     
-    const result = await handleGeminiCall('explain', {
+    setExplainResult('');
+    await handleGeminiCall('explain', {
       projectName: selectedProject,
       architectureQuery: queryText
+    }, (currentText) => {
+      setExplainResult(currentText);
     });
-    if (result) {
-      setExplainResult(result);
-    }
   };
 
   return (

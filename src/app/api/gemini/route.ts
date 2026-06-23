@@ -96,83 +96,86 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    let contents: any = [];
+    let systemInstruction = '';
+
     if (action === 'chat') {
       const { userMessage, chatHistory } = payload;
       
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: `Here is the full background data and portfolio content of Akshit Kumar Dhaka:\n\n${RESUME_DATA_CONTEXT}\n\nPlease act as Akshit's professional Recruiter AI Companion. Direct, helpful, honest, and technically precise. Answer the recruiter's inquiry with clarity, focusing purely on his genuine capabilities, projects, education, and experience. Do not hallucinate skills or certificates he doesn't have.\n\nRecruiter ask: ${userMessage}` }]
-          }
-        ],
-        config: {
-          systemInstruction: 'You are an elite Recruiter AI Companion for Akshit Kumar Dhaka. Answer questions precisely based on Akshit\'s portfolio. Keep responses concise, objective, and styled cleanly with markdown formatting. Use bullet points where appropriate.'
+      contents = [
+        {
+          role: 'user',
+          parts: [{ text: `Here is the full background data and portfolio content of Akshit Kumar Dhaka:\n\n${RESUME_DATA_CONTEXT}\n\nPlease act as Akshit's professional Recruiter AI Companion. Direct, helpful, honest, and technically precise. Answer the recruiter's inquiry with clarity, focusing purely on his genuine capabilities, projects, education, and experience. Do not hallucinate skills or certificates he doesn't have.\n\nRecruiter ask: ${userMessage}` }]
         }
-      });
-
-      return NextResponse.json({ text: response.text });
-    }
-
-    if (action === 'tailor') {
+      ];
+      systemInstruction = 'You are an elite Recruiter AI Companion for Akshit Kumar Dhaka. Answer questions precisely based on Akshit\'s portfolio. Keep responses concise, objective, and styled cleanly with markdown formatting. Use bullet points where appropriate.';
+    } else if (action === 'tailor') {
       const { jobDescription } = payload;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: `We need to tailor Akshit's profile to this Job Description:\n\n---\n${jobDescription}\n---\n\nAkshit's Background:\n${RESUME_DATA_CONTEXT}\n\nPlease analyze matching, extract gaps if any, and suggest how to pitch his profile. Provide 3 clean sections: 1) Matches of Core Strengths, 2) Tailored Professional Summary pitch, 3) Recommended Resume Bullets to highlight.` }]
-          }
-        ],
-        config: {
-          systemInstruction: 'You are a veteran resume compiler and tech recruitment specialist analyzing matching. Format matches neatly into 3 distinct sections using markdown headers.'
+      contents = [
+        {
+          role: 'user',
+          parts: [{ text: `We need to tailor Akshit's profile to this Job Description:\n\n---\n${jobDescription}\n---\n\nAkshit's Background:\n${RESUME_DATA_CONTEXT}\n\nPlease analyze matching, extract gaps if any, and suggest how to pitch his profile. Provide 3 clean sections: 1) Matches of Core Strengths, 2) Tailored Professional Summary pitch, 3) Recommended Resume Bullets to highlight.` }]
         }
-      });
-
-      return NextResponse.json({ text: response.text });
-    }
-
-    if (action === 'explain') {
+      ];
+      systemInstruction = 'You are a veteran resume compiler and tech recruitment specialist analyzing matching. Format matches neatly into 3 distinct sections using markdown headers.';
+    } else if (action === 'explain') {
       const { projectName, architectureQuery } = payload;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: `Project: ${projectName}\nInquiry: ${architectureQuery}\n\nAkshit's Project Context:\n${RESUME_DATA_CONTEXT}\n\nProvide an immersive system architecture explanation detailing: how Akshit built it, how to scale it using microservices/containers (e.g. AWS, Nginx, PM2, Docker, Redis), and provide a brief ASCII diagram of the scaled topology followed by detailed architectural guidelines.` }]
-          }
-        ],
-        config: {
-          systemInstruction: 'You are a Principal Software Architect. Explain modular scaling and topologies. Provide precise blueprints. Use ASCII code blocks for flow diagrams and maintain high professional engineering language.'
+      contents = [
+        {
+          role: 'user',
+          parts: [{ text: `Project: ${projectName}\nInquiry: ${architectureQuery}\n\nAkshit's Project Context:\n${RESUME_DATA_CONTEXT}\n\nProvide an immersive system architecture explanation detailing: how Akshit built it, how to scale it using microservices/containers (e.g. AWS, Nginx, PM2, Docker, Redis), and provide a brief ASCII diagram of the scaled topology followed by detailed architectural guidelines.` }]
         }
-      });
-
-      return NextResponse.json({ text: response.text });
-    }
-
-    if (action === 'polish_email') {
+      ];
+      systemInstruction = 'You are a Principal Software Architect. Explain modular scaling and topologies. Provide precise blueprints. Use ASCII code blocks for flow diagrams and maintain high professional engineering language.';
+    } else if (action === 'polish_email') {
       const { name, company, email, rawMessage } = payload;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: `Recruiter Name: ${name}\nCompany: ${company || 'Enterprise Partner'}\nRecruiter Email: ${email}\nRaw Draft Message:\n${rawMessage}\n\nAkshit's Background: ${RESUME_DATA_CONTEXT}\n\nPlease take this raw draft and polish it into a crisp, exceptionally professional, high-impact introductory outreach email from the recruiter to Akshit, showing deep technical matching with his Next.js, DevOps, or Node.js background. Only output the polished email body text (no subject line or meta-introduction), written in a polished and professional recruiter tone.` }]
-          }
-        ],
-        config: {
-          systemInstruction: 'You are a Senior Executive Recruiter. Polish raw drafts to make them highly professional, persuasive, and engaging. Avoid any meta introductions or wrappers; just output the polished text itself.'
+      contents = [
+        {
+          role: 'user',
+          parts: [{ text: `Recruiter Name: ${name}\nCompany: ${company || 'Enterprise Partner'}\nRecruiter Email: ${email}\nRaw Draft Message:\n${rawMessage}\n\nAkshit's Background: ${RESUME_DATA_CONTEXT}\n\nPlease take this raw draft and polish it into a crisp, exceptionally professional, high-impact introductory outreach email from the recruiter to Akshit, showing deep technical matching with his Next.js, DevOps, or Node.js background. Only output the polished email body text (no subject line or meta-introduction), written in a polished and professional recruiter tone.` }]
         }
-      });
-
-      return NextResponse.json({ text: response.text });
+      ];
+      systemInstruction = 'You are a Senior Executive Recruiter. Polish raw drafts to make them highly professional, persuasive, and engaging. Avoid any meta introductions or wrappers; just output the polished text itself.';
+    } else {
+      return NextResponse.json({ error: 'Invalid action parameter specified' }, { status: 400 });
     }
 
-    return NextResponse.json({ error: 'Invalid action parameter specified' }, { status: 400 });
+    const responseStream = await ai.models.generateContentStream({
+      model: 'gemini-3.5-flash',
+      contents,
+      config: {
+        systemInstruction,
+      },
+    });
+
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of responseStream) {
+            if (chunk.text) {
+              controller.enqueue(encoder.encode(chunk.text));
+            }
+          }
+        } catch (err: any) {
+          console.error("Stream reader error:", err);
+          controller.error(err);
+        } finally {
+          controller.close();
+        }
+      }
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
+      },
+    });
 
   } catch (error: any) {
     console.error('Gemini Back-end Route Error:', error);

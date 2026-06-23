@@ -91,12 +91,30 @@ export default function InteractiveFooter() {
           payload: { name, company, email, rawMessage: message }
         })
       });
-      const data = await response.json();
+      
       if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: 'Connection to refinement compiler interrupted' }));
         throw new Error(data.error || 'Connection to refinement compiler interrupted');
       }
-      if (data.text) {
-        setMessage(data.text);
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('Response body is not readable');
+      }
+
+      const decoder = new TextDecoder();
+      let done = false;
+      let accumulatedText = '';
+      setMessage(''); // Clear original content to stream the refined one in real-time
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: !done });
+          accumulatedText += chunk;
+          setMessage(accumulatedText);
+        }
       }
     } catch (err: any) {
       console.error(err);
