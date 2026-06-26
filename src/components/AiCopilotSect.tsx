@@ -66,6 +66,15 @@ export default function AiCopilotSect() {
   const [activeSubTab, setActiveSubTab] = useState<'chat' | 'tailor' | 'architecture'>('chat');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [queryCount, setQueryCount] = useState(0);
+
+  useEffect(() => {
+    const savedCount = localStorage.getItem('ai_query_count');
+    if (savedCount) {
+      const count = parseInt(savedCount, 10);
+      setQueryCount(isNaN(count) ? 0 : count);
+    }
+  }, []);
 
   // 1. Recruiter Companion AI Chat State
   const [chatInput, setChatInput] = useState('');
@@ -164,6 +173,11 @@ export default function AiCopilotSect() {
 
   // Submit Recruiter Chat Input
   const handleSendChat = async (textToSend?: string) => {
+    if (queryCount >= 10) {
+      setErrorMessage("You have reached the limit of 10 free AI queries to prevent misuse.");
+      return;
+    }
+
     const messageText = textToSend || chatInput;
     if (!messageText.trim() || loading) return;
 
@@ -191,33 +205,60 @@ export default function AiCopilotSect() {
     if (!aiResponse) {
       // If failed, remove the temporary message
       setChatMessages(prev => prev.slice(0, -1));
+    } else {
+      // Success! Increment count
+      const nextCount = queryCount + 1;
+      setQueryCount(nextCount);
+      localStorage.setItem('ai_query_count', nextCount.toString());
     }
   };
 
   // Perform Resume Tailoring
   const handleTailorResume = async () => {
+    if (queryCount >= 10) {
+      setErrorMessage("You have reached the limit of 10 free AI queries to prevent misuse.");
+      return;
+    }
     if (!jobDescriptionInput.trim() || loading) return;
     setTailorResult('');
-    await handleGeminiCall('tailor', {
+    const aiResponse = await handleGeminiCall('tailor', {
       jobDescription: jobDescriptionInput
     }, (currentText) => {
       setTailorResult(currentText);
     });
+
+    if (aiResponse) {
+      // Success! Increment count
+      const nextCount = queryCount + 1;
+      setQueryCount(nextCount);
+      localStorage.setItem('ai_query_count', nextCount.toString());
+    }
   };
 
   // Perform Architecture Explanation Routing
   const handleExplainArchitecture = async () => {
+    if (queryCount >= 10) {
+      setErrorMessage("You have reached the limit of 10 free AI queries to prevent misuse.");
+      return;
+    }
     if (loading) return;
     const activeQueryObj = archQueries.find(q => q.id === architectureQueryGroup);
     const queryText = activeQueryObj ? activeQueryObj.query : "Explain scaling";
     
     setExplainResult('');
-    await handleGeminiCall('explain', {
+    const aiResponse = await handleGeminiCall('explain', {
       projectName: selectedProject,
       architectureQuery: queryText
     }, (currentText) => {
       setExplainResult(currentText);
     });
+
+    if (aiResponse) {
+      // Success! Increment count
+      const nextCount = queryCount + 1;
+      setQueryCount(nextCount);
+      localStorage.setItem('ai_query_count', nextCount.toString());
+    }
   };
 
   return (
@@ -319,9 +360,16 @@ export default function AiCopilotSect() {
                   <span className="font-mono text-[10px] text-gray-500 uppercase">SYS.AGENT // ONLINE</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#00d1ff] animate-pulse" />
-                <span className="font-mono text-[9px] text-[#00d1ff] uppercase">Channel Safe</span>
+              <div className="flex flex-col items-end gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#00d1ff] animate-pulse" />
+                  <span className="font-mono text-[10px] text-[#00d1ff] uppercase">Questions: {queryCount}/10 Used</span>
+                </div>
+                {queryCount >= 10 ? (
+                  <span className="font-mono text-[8px] text-red-400 uppercase tracking-wider">Limit Reached</span>
+                ) : (
+                  <span className="font-mono text-[8px] text-gray-400 uppercase tracking-wider">{10 - queryCount} remaining</span>
+                )}
               </div>
             </div>
 
@@ -373,7 +421,7 @@ export default function AiCopilotSect() {
                   <button
                     key={i}
                     onClick={() => handleSendChat(promptText)}
-                    disabled={loading}
+                    disabled={loading || queryCount >= 10}
                     className="px-3.5 py-2 bg-[#141414]/90 hover:bg-[#00d1ff]/10 hover:border-[#00d1ff]/30 text-xs font-sans text-gray-400 hover:text-white border border-white/5 rounded-lg text-left transition-all duration-300 cursor-pointer disabled:opacity-50"
                   >
                     {promptText}
@@ -383,24 +431,32 @@ export default function AiCopilotSect() {
             </div>
 
             {/* Input Form */}
-            <div className="flex gap-2.5">
-              <input
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
-                placeholder="Ask Akshit's co-pilot anything about his capabilities or custom projects..."
-                disabled={loading}
-                className="flex-1 bg-[#0c0c0c] border border-white/10 rounded-lg px-4 py-3 font-sans text-xs sm:text-sm text-white focus:outline-none focus:border-[#00d1ff] focus:ring-1 focus:ring-[#00d1ff]/20 placeholder-gray-500 transition-all"
-              />
-              <button
-                onClick={() => handleSendChat()}
-                disabled={loading || !chatInput.trim()}
-                className="px-5 py-3 h-full bg-[#00d1ff] text-black font-semibold uppercase tracking-wider font-mono text-xs rounded-lg hover:shadow-[0_0_15px_#00d1ff] transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:shadow-none cursor-pointer"
-              >
-                Send
-                <Send className="w-3.5 h-3.5" />
-              </button>
+            <div className="flex flex-col gap-2">
+              {queryCount >= 10 && (
+                <div className="text-xs text-red-400 font-mono flex items-center gap-1.5 bg-red-950/20 border border-red-900/30 p-3 rounded-lg mb-1">
+                  <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 animate-pulse" />
+                  <span>You have used all 10 available questions. Thank you for testing the copilot!</span>
+                </div>
+              )}
+              <div className="flex gap-2.5">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
+                  placeholder={queryCount >= 10 ? "Query limit reached (10/10 questions used)" : "Ask Akshit's co-pilot anything about his capabilities or custom projects..."}
+                  disabled={loading || queryCount >= 10}
+                  className="flex-1 bg-[#0c0c0c] border border-white/10 rounded-lg px-4 py-3 font-sans text-xs sm:text-sm text-white focus:outline-none focus:border-[#00d1ff] focus:ring-1 focus:ring-[#00d1ff]/20 placeholder-gray-500 transition-all disabled:opacity-50"
+                />
+                <button
+                  onClick={() => handleSendChat()}
+                  disabled={loading || !chatInput.trim() || queryCount >= 10}
+                  className="px-5 py-3 h-full bg-[#00d1ff] text-black font-semibold uppercase tracking-wider font-mono text-xs rounded-lg hover:shadow-[0_0_15px_#00d1ff] transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:shadow-none cursor-pointer"
+                >
+                  Send
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -416,9 +472,14 @@ export default function AiCopilotSect() {
                   <span className="font-mono text-[10px] text-gray-500 uppercase">SYS.OPTIMIZER // COMPILE ENGINE</span>
                 </div>
               </div>
-              <span className="font-mono text-[9px] px-2.5 py-1 bg-white/5 border border-white/5 text-gray-300 uppercase shrink-0 self-start sm:self-auto">
-                Next-Gen Align Analysis
-              </span>
+              <div className="flex flex-col sm:items-end gap-1">
+                <span className="font-mono text-[10px] px-2.5 py-1 bg-white/5 border border-white/5 text-gray-300 uppercase shrink-0 self-start sm:self-auto">
+                  Questions: {queryCount}/10 Used
+                </span>
+                {queryCount >= 10 && (
+                  <span className="font-mono text-[8px] text-red-400 uppercase tracking-wider">Limit Reached</span>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -431,9 +492,10 @@ export default function AiCopilotSect() {
                 <textarea
                   value={jobDescriptionInput}
                   onChange={(e) => setJobDescriptionInput(e.target.value)}
-                  placeholder="Paste target SDE/Full Stack job description parameters here..."
+                  placeholder={queryCount >= 10 ? "Query limit reached (10/10 questions used)" : "Paste target SDE/Full Stack job description parameters here..."}
+                  disabled={loading || queryCount >= 10}
                   rows={8}
-                  className="w-full bg-[#0c0c0c] border border-white/10 rounded-xl p-4 font-sans text-xs sm:text-sm text-white focus:outline-none focus:border-[#00d1ff] focus:ring-1 focus:ring-[#00d1ff]/20 placeholder-gray-500 transition-all resize-none"
+                  className="w-full bg-[#0c0c0c] border border-white/10 rounded-xl p-4 font-sans text-xs sm:text-sm text-white focus:outline-none focus:border-[#00d1ff] focus:ring-1 focus:ring-[#00d1ff]/20 placeholder-gray-500 transition-all resize-none disabled:opacity-50"
                 />
 
                 <div className="space-y-2">
@@ -443,7 +505,8 @@ export default function AiCopilotSect() {
                       <button
                         key={idx}
                         onClick={() => setJobDescriptionInput(desc.content)}
-                        className="px-3 py-2 bg-[#121212]/80 hover:bg-white/5 text-xs text-left text-gray-400 hover:text-white border border-white/5 rounded-lg font-mono transition-colors"
+                        disabled={loading || queryCount >= 10}
+                        className="px-3 py-2 bg-[#121212]/80 hover:bg-white/5 text-xs text-left text-gray-400 hover:text-white border border-white/5 rounded-lg font-mono transition-colors disabled:opacity-50"
                       >
                         ⚡ {desc.title}
                       </button>
@@ -453,7 +516,7 @@ export default function AiCopilotSect() {
 
                 <button
                   onClick={handleTailorResume}
-                  disabled={loading || !jobDescriptionInput.trim()}
+                  disabled={loading || !jobDescriptionInput.trim() || queryCount >= 10}
                   className="w-full py-3.5 bg-[#00d1ff] text-black font-semibold uppercase tracking-widest font-mono text-xs rounded-xl hover:shadow-[0_0_15px_#00d1ff] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none cursor-pointer"
                 >
                   {loading ? (
@@ -464,7 +527,7 @@ export default function AiCopilotSect() {
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4" />
-                      TAILOR & REPORT METRICS
+                      {queryCount >= 10 ? "LIMIT REACHED (10/10)" : "TAILOR & REPORT METRICS"}
                     </>
                   )}
                 </button>
@@ -517,9 +580,14 @@ export default function AiCopilotSect() {
                   <span className="font-mono text-[10px] text-gray-500 uppercase">SYS.DESIGN // TOPOLOGY CANVAS</span>
                 </div>
               </div>
-              <span className="font-mono text-[9px] px-2.5 py-1 bg-[#00d1ff]/15 border border-[#00d1ff]/30 text-[#00d1ff] uppercase shrink-0 self-start sm:self-auto">
-                ASCII Topology Generator Included
-              </span>
+              <div className="flex flex-col sm:items-end gap-1">
+                <span className="font-mono text-[10px] px-2.5 py-1 bg-[#00d1ff]/15 border border-[#00d1ff]/30 text-[#00d1ff] uppercase shrink-0 self-start sm:self-auto">
+                  Questions: {queryCount}/10 Used
+                </span>
+                {queryCount >= 10 && (
+                  <span className="font-mono text-[8px] text-red-400 uppercase tracking-wider">Limit Reached</span>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -529,7 +597,8 @@ export default function AiCopilotSect() {
                 <select
                   value={selectedProject}
                   onChange={(e) => setSelectedProject(e.target.value)}
-                  className="w-full bg-[#0c0c0c] border border-white/10 rounded-lg px-3.5 py-2.5 text-xs text-white uppercase tracking-wider font-mono focus:outline-none focus:border-[#00d1ff]"
+                  disabled={loading || queryCount >= 10}
+                  className="w-full bg-[#0c0c0c] border border-white/10 rounded-lg px-3.5 py-2.5 text-xs text-white uppercase tracking-wider font-mono focus:outline-none focus:border-[#00d1ff] disabled:opacity-50"
                 >
                   {projects.map((proj) => (
                     <option key={proj.name} value={proj.name} className="bg-black text-gray-300">
@@ -547,7 +616,8 @@ export default function AiCopilotSect() {
                     <button
                       key={q.id}
                       onClick={() => setArchitectureQueryGroup(q.id)}
-                      className={`flex-1 px-3 py-2.5 rounded-lg border text-[11px] font-sans tracking-wide text-left transition-all ${
+                      disabled={loading || queryCount >= 10}
+                      className={`flex-1 px-3 py-2.5 rounded-lg border text-[11px] font-sans tracking-wide text-left transition-all disabled:opacity-50 ${
                         architectureQueryGroup === q.id
                           ? 'bg-[#00d1ff]/15 border-[#00d1ff]/30 text-white'
                           : 'bg-[#121212]/80 border-white/5 text-gray-400 hover:text-white'
@@ -563,7 +633,7 @@ export default function AiCopilotSect() {
               <div className="flex items-end">
                 <button
                   onClick={handleExplainArchitecture}
-                  disabled={loading}
+                  disabled={loading || queryCount >= 10}
                   className="w-full py-2.5 bg-[#00d1ff] text-black font-semibold uppercase tracking-widest font-mono text-xs rounded-lg hover:shadow-[0_0_15px_#00d1ff] transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   {loading ? (
@@ -573,7 +643,7 @@ export default function AiCopilotSect() {
                     </>
                   ) : (
                     <>
-                      Analyze System
+                      {queryCount >= 10 ? "Limit Reached" : "Analyze System"}
                       <ArrowRight className="w-3.5 h-3.5" />
                     </>
                   )}

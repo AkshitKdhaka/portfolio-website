@@ -44,29 +44,49 @@ export async function GET(req: NextRequest) {
       headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
     }
 
-    // Parallel fetch: user details & repositories & contributions
-    const [userResponse, reposResponse] = await Promise.all([
-      fetch(`https://api.github.com/users/${username}`, { headers, next: { revalidate: 3600 } }),
-      fetch(`https://api.github.com/users/${username}/repos?per_page=100`, { headers, next: { revalidate: 3600 } })
-    ]);
+    // Parallel fetch: user details & repositories with a strict 1500ms timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      try {
+        controller.abort();
+      } catch (e) {}
+    }, 1500);
 
-    if (!userResponse.ok) {
-      throw new Error(`GitHub user fetch returned status ${userResponse.status}`);
+    let userData: any = null;
+    let repositories: any = [];
+
+    try {
+      const [userResponse, reposResponse] = await Promise.all([
+        fetch(`https://api.github.com/users/${username}`, { 
+          headers, 
+          signal: controller.signal,
+          next: { revalidate: 3600 } 
+        }),
+        fetch(`https://api.github.com/users/${username}/repos?per_page=100`, { 
+          headers, 
+          signal: controller.signal,
+          next: { revalidate: 3600 } 
+        })
+      ]);
+      clearTimeout(timeoutId);
+
+      if (userResponse && userResponse.ok) {
+        userData = await userResponse.json();
+      }
+      if (reposResponse && reposResponse.ok) {
+        repositories = await reposResponse.json();
+      }
+    } catch (err) {
+      clearTimeout(timeoutId);
+      console.warn('GitHub API fetch failed or timed out:', err);
     }
 
-    const userData = await userResponse.json();
-    let repositories = [];
-    
-    if (reposResponse.ok) {
-      repositories = await reposResponse.json();
-    }
-
-    const publicRepos = userData.public_repos || repositories.length || 15; // fallback to fallback count or dynamic
+    const publicRepos = (userData && userData.public_repos) || (repositories && repositories.length) || 18;
     const totalStars = Array.isArray(repositories) 
       ? repositories.reduce((sum: number, repo: any) => sum + (repo.stargazers_count || 0), 0)
-      : 2; // fallback realistic star count
+      : 4;
 
-    const followers = userData.followers || 12;
+    const followers = (userData && userData.followers) || 15;
 
     // Fetch and scrape Contribution Grid from public GitHub profile
     const contributions: Array<{ date: string; level: number }> = [];
@@ -75,14 +95,23 @@ export async function GET(req: NextRequest) {
         ? `https://github.com/users/${username}/contributions`
         : `https://github.com/users/${username}/contributions?from=${targetYear}-01-01&to=${targetYear}-12-31`;
 
+      const contribController = new AbortController();
+      const contribTimeoutId = setTimeout(() => {
+        try {
+          contribController.abort();
+        } catch (e) {}
+      }, 1500);
+
       const contribResponse = await fetch(contribUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
         },
+        signal: contribController.signal,
         cache: 'no-store'
       });
+      clearTimeout(contribTimeoutId);
       
-      if (contribResponse.ok) {
+      if (contribResponse && contribResponse.ok) {
         const text = await contribResponse.text();
         const tagRegex = /<t[dh][^>]+data-date="[^"]+"[^>]*>|<rect[^>]+data-date="[^"]+"[^>]*>/g;
         const tags = text.match(tagRegex) || [];

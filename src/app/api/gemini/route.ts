@@ -79,6 +79,15 @@ export async function POST(req: NextRequest) {
   try {
     const { action, payload } = await req.json();
 
+    // Guard to check query limit (max 10)
+    const cookie = req.cookies.get('ai_query_count');
+    const currentCount = cookie ? parseInt(cookie.value, 10) : 0;
+    if (currentCount >= 10) {
+      return NextResponse.json({
+        error: 'Limit Reached: You have reached the limit of 10 free AI queries to prevent misuse.'
+      }, { status: 403 });
+    }
+
     // Guard representing missing API keys to provide clear developer workflow
     if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'MY_GEMINI_API_KEY') {
       return NextResponse.json({
@@ -169,11 +178,14 @@ export async function POST(req: NextRequest) {
       }
     });
 
+    const nextCount = currentCount + 1;
+
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
         'Cache-Control': 'no-cache, no-transform',
         'Connection': 'keep-alive',
+        'Set-Cookie': `ai_query_count=${nextCount}; Path=/; Max-Age=31536000; SameSite=Lax`,
       },
     });
 

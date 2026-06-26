@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Phone, Linkedin, Github, Send, Sparkles, Terminal, Copy, Check } from 'lucide-react';
+import { Mail, Phone, Linkedin, Github, Send, Sparkles, Terminal, Copy, Check, AlertTriangle } from 'lucide-react';
 import { contactInfo, fullName } from '../data';
 
 const containerVariants = {
@@ -52,6 +52,15 @@ export default function InteractiveFooter() {
   const [polishError, setPolishError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [emailHover, setEmailHover] = useState(false);
+  const [queryCount, setQueryCount] = useState(0);
+
+  useEffect(() => {
+    const savedCount = localStorage.getItem('ai_query_count');
+    if (savedCount) {
+      const count = parseInt(savedCount, 10);
+      setQueryCount(isNaN(count) ? 0 : count);
+    }
+  }, []);
 
   const handleCopyEmail = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -79,6 +88,10 @@ export default function InteractiveFooter() {
   };
 
   const handleAiPolish = async () => {
+    if (queryCount >= 10) {
+      setPolishError("AI Limit Reached (10/10 questions used). You cannot polish more messages.");
+      return;
+    }
     if (!message.trim() || polishing) return;
     setPolishing(true);
     setPolishError(null);
@@ -116,6 +129,11 @@ export default function InteractiveFooter() {
           setMessage(accumulatedText);
         }
       }
+
+      // Success! Update limit count
+      const nextCount = queryCount + 1;
+      setQueryCount(nextCount);
+      localStorage.setItem('ai_query_count', nextCount.toString());
     } catch (err: any) {
       console.error(err);
       setPolishError(err.message || 'The Gemini server was unreachable. Please type a custom message or try again.');
@@ -307,7 +325,7 @@ export default function InteractiveFooter() {
                   <button
                     type="button"
                     onClick={handleAiPolish}
-                    disabled={polishing || !message.trim()}
+                    disabled={polishing || !message.trim() || queryCount >= 10}
                     className="flex items-center gap-1.5 px-3 py-1 bg-[#00d1ff]/15 hover:bg-[#00d1ff]/25 border border-[#00d1ff]/30 text-[#00d1ff] hover:text-white transition-all text-[10px] font-mono uppercase tracking-wider disabled:opacity-40 disabled:hover:bg-[#00d1ff]/15 cursor-pointer rounded-sm"
                   >
                     {polishing ? (
@@ -318,7 +336,7 @@ export default function InteractiveFooter() {
                     ) : (
                       <>
                         <Sparkles className="w-3 h-3 text-[#00d1ff]" />
-                        Refine draft with Gemini
+                        {queryCount >= 10 ? "AI Limit Reached (10/10)" : `Refine with Gemini (${queryCount}/10)`}
                       </>
                     )}
                   </button>
