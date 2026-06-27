@@ -1,11 +1,9 @@
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@400;600;700&family=Geist:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap');
-
 @theme {
-  --font-sans: 'Inter', sans-serif;
-  --font-display: 'Montserrat', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: var(--font-inter), sans-serif;
+  --font-display: var(--font-montserrat), sans-serif;
+  --font-mono: var(--font-jetbrains-mono), monospace;
 
   --color-background: #050505;
   --color-on-background: #e2e8f0;
@@ -50,7 +48,7 @@ html {
 html, body {
   background-color: #050505;
   color: #e2e8f0;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
   /* Smooth scrolling is handled by a custom JS easing engine in App.tsx.
      Native scroll-behavior is left as 'auto' so it doesn't fight the tween. */
   scroll-behavior: auto;

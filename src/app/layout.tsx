@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { fontVariables } from '../lib/fonts';
 import '../index.css';
 
 export const metadata: Metadata = {
@@ -12,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={fontVariables}>
       <body>
         <div id="root">{children}</div>
       </body>
