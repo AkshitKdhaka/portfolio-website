@@ -1,7 +1,8 @@
-name: CI
+name: CI/CD
 
-# Continuous Integration: validates every push and pull request by
-# installing dependencies, linting, type-checking, and building the app.
+# Continuous Integration & Deployment:
+# - On every push/PR to main: install deps, lint, type-check, and build.
+# - On push to main only (after a green build): SSH into EC2 and redeploy.
 on:
   push:
     branches: [main]
@@ -10,7 +11,7 @@ on:
 
 # Cancel an in-progress run if a newer commit is pushed to the same ref.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: cicd-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -39,7 +40,31 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # The build must not fail if runtime secrets are absent. All API
-          # routes read env vars at request time (dynamic = 'force-dynamic'),
-          # so these are only placeholders to keep the build deterministic.
+          # No real secrets are needed at build time; API routes read env
+          # vars at request time (dynamic = 'force-dynamic').
           NEXT_TELEMETRY_DISABLED: "1"
+
+  deploy:
+    name: Deploy to EC2
+    needs: build
+    # Only deploy real pushes to main (never on pull requests).
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          # Build on a small instance can take a while; allow extra time.
+          command_timeout: 20m
+          script: |
+            set -e
+            cd ~/portfolio-website
+            git fetch --all
+            git reset --hard origin/main
+            npm ci
+            npm run build
+            pm2 restart portfolio --update-env
