@@ -10,9 +10,16 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: __dirname,
 
   // Lint runs as its own dedicated CI step, so it should not also gate the
-  // production build. The build still type-checks; only ESLint is skipped here.
+  // production build.
   eslint: {
     ignoreDuringBuilds: true,
+  },
+
+  // Type-checking runs as its own dedicated CI step (`tsc --noEmit`) on every
+  // push before deploy, so we skip the in-build type check. This removes the
+  // memory-heavy phase that OOM-kills `next build` on small (1GB) EC2 boxes.
+  typescript: {
+    ignoreBuildErrors: true,
   },
 
   // Produce a self-contained server bundle (.next/standalone) that is ideal

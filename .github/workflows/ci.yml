@@ -66,5 +66,8 @@ jobs:
             git fetch --all
             git reset --hard origin/main
             npm ci
+            # Raise Node's heap limit so the build has headroom (backed by swap
+            # on small instances). Type-checking is skipped via next.config.ts.
+            export NODE_OPTIONS="--max-old-space-size=2048"
             npm run build
             pm2 restart portfolio --update-env
