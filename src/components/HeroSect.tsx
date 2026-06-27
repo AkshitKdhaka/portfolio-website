@@ -6,7 +6,6 @@ import { ArrowRight, Code } from 'lucide-react';
 
 interface HeroProps {
   onExplore: () => void;
-  onViewSource: () => void;
 }
 
 const sectionVariants = {
@@ -46,7 +45,7 @@ const cardVariants = {
   }
 };
 
-export default function HeroSect({ onExplore, onViewSource }: HeroProps) {
+export default function HeroSect({ onExplore }: HeroProps) {
   return (
     <section className="relative min-h-screen flex flex-col justify-start items-center w-full px-4 sm:px-8 md:px-16 overflow-hidden z-20 pt-32 sm:pt-40 md:pt-48 pb-12">
       <motion.div 

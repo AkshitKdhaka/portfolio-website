@@ -85,6 +85,8 @@ export default function AiCopilotSect() {
     }
   ]);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  const isChatMountRef = useRef(true);
 
   const quickInquiries = [
     "Does Akshit have production Next.js experience?",
@@ -119,9 +121,18 @@ export default function AiCopilotSect() {
     { id: 'db', label: "Design a distributed database architecture", query: "Sketch out a resilient, high-availability replication design for the database backplane of this project, minimizing failover times." }
   ];
 
-  // Scroll chat to bottom
+  // Scroll the chat feed to the bottom WITHOUT moving the whole page.
+  // Skipping the first mount prevents the page from auto-jumping to this
+  // section on initial load.
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (isChatMountRef.current) {
+      isChatMountRef.current = false;
+      return;
+    }
+    const container = chatScrollRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   }, [chatMessages, loading]);
 
   // Execute Gemini REST call Helper
@@ -374,7 +385,7 @@ export default function AiCopilotSect() {
             </div>
 
             {/* Chat Messages Feed */}
-            <div className="h-[360px] overflow-y-auto bg-[#0a0a0a]/80 border border-white/5 rounded-xl p-4 space-y-4 font-sans text-sm block">
+            <div ref={chatScrollRef} className="h-[360px] overflow-y-auto bg-[#0a0a0a]/80 border border-white/5 rounded-xl p-4 space-y-4 font-sans text-sm block">
               {chatMessages.map((msg, index) => (
                 <div
                   key={index}

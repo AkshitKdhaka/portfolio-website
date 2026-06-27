@@ -51,10 +51,21 @@ html, body {
   background-color: #050505;
   color: #e2e8f0;
   font-family: 'Inter', sans-serif;
-  scroll-behavior: smooth;
+  /* Smooth scrolling is handled by a custom JS easing engine in App.tsx.
+     Native scroll-behavior is left as 'auto' so it doesn't fight the tween. */
+  scroll-behavior: auto;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Respect users who prefer reduced motion: fall back to instant jumps. */
+@media (prefers-reduced-motion: reduce) {
+  html, body {
+    scroll-behavior: auto;
+  }
 }
 
 .snap-section {

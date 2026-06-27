@@ -3,6 +3,40 @@ import { GoogleGenAI } from '@google/genai';
 
 export const dynamic = 'force-dynamic';
 
+const MODEL_NAME = 'gemini-2.5-flash';
+
+// Extracts an HTTP-ish status code from a thrown GoogleGenAI ApiError.
+function getErrorStatus(error: any): number | undefined {
+  if (typeof error?.status === 'number') return error.status;
+  if (typeof error?.code === 'number') return error.code;
+  const nested = error?.error?.code ?? error?.error?.error?.code;
+  return typeof nested === 'number' ? nested : undefined;
+}
+
+const RETRYABLE_STATUSES = new Set([429, 500, 503]);
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Retries a transient-failure-prone call with exponential backoff + jitter.
+async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
+  let lastError: any;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      const status = getErrorStatus(error);
+      const isLastAttempt = attempt === maxAttempts - 1;
+      if (isLastAttempt || (status !== undefined && !RETRYABLE_STATUSES.has(status))) {
+        throw error;
+      }
+      const backoff = 2 ** attempt * 500 + Math.floor(Math.random() * 250);
+      console.warn(`Gemini request failed (status ${status}). Retrying in ${backoff}ms...`);
+      await sleep(backoff);
+    }
+  }
+  throw lastError;
+}
+
 const RESUME_DATA_CONTEXT = `
 Full Name: AKSHIT KUMAR DHAKA
 Profession: Full Stack Developer & Technical Architect
@@ -107,58 +141,95 @@ export async function POST(req: NextRequest) {
 
     let contents: any = [];
     let systemInstruction = '';
+    let generationConfig: { temperature: number; maxOutputTokens: number; topP: number } = {
+      temperature: 0.4,
+      maxOutputTokens: 600,
+      topP: 0.9,
+    };
+
+    // Shared output rules so every answer stays precise, factual, and renders
+    // cleanly in the plain-text UI (no raw markdown symbols leaking through).
+    const PLAIN_TEXT_RULES =
+      'OUTPUT RULES: Write in clean plain text only. Do NOT use markdown symbols such as **, ##, *, backticks, or tables. ' +
+      'For lists, start each line with a simple dash (-). Keep paragraphs short. Be concise and precise. ' +
+      'Only state facts present in the provided portfolio data; never invent skills, tools, dates, employers, metrics, or certifications. ' +
+      'If something is not in the data, say it is not specified rather than guessing.';
 
     if (action === 'chat') {
-      const { userMessage, chatHistory } = payload;
-      
+      const { userMessage } = payload;
+
       contents = [
         {
           role: 'user',
-          parts: [{ text: `Here is the full background data and portfolio content of Akshit Kumar Dhaka:\n\n${RESUME_DATA_CONTEXT}\n\nPlease act as Akshit's professional Recruiter AI Companion. Direct, helpful, honest, and technically precise. Answer the recruiter's inquiry with clarity, focusing purely on his genuine capabilities, projects, education, and experience. Do not hallucinate skills or certificates he doesn't have.\n\nRecruiter ask: ${userMessage}` }]
+          parts: [{ text: `PORTFOLIO DATA (the only source of truth):\n${RESUME_DATA_CONTEXT}\n\nRecruiter question: ${userMessage}` }]
         }
       ];
-      systemInstruction = 'You are an elite Recruiter AI Companion for Akshit Kumar Dhaka. Answer questions precisely based on Akshit\'s portfolio. Keep responses concise, objective, and styled cleanly with markdown formatting. Use bullet points where appropriate.';
+      systemInstruction =
+        `You are the Recruiter AI Companion for Akshit Kumar Dhaka. Answer ONLY from the portfolio data below. ` +
+        `Give a direct, focused answer in 2-5 short sentences or up to 5 short bullet points. Do not pad with generic filler or repeat the question. ` +
+        PLAIN_TEXT_RULES;
+      generationConfig = { temperature: 0.3, maxOutputTokens: 400, topP: 0.9 };
     } else if (action === 'tailor') {
       const { jobDescription } = payload;
 
       contents = [
         {
           role: 'user',
-          parts: [{ text: `We need to tailor Akshit's profile to this Job Description:\n\n---\n${jobDescription}\n---\n\nAkshit's Background:\n${RESUME_DATA_CONTEXT}\n\nPlease analyze matching, extract gaps if any, and suggest how to pitch his profile. Provide 3 clean sections: 1) Matches of Core Strengths, 2) Tailored Professional Summary pitch, 3) Recommended Resume Bullets to highlight.` }]
+          parts: [{ text: `JOB DESCRIPTION:\n${jobDescription}\n\nPORTFOLIO DATA (the only source of truth):\n${RESUME_DATA_CONTEXT}` }]
         }
       ];
-      systemInstruction = 'You are a veteran resume compiler and tech recruitment specialist analyzing matching. Format matches neatly into 3 distinct sections using markdown headers.';
+      systemInstruction =
+        `You are a technical recruitment specialist matching Akshit's profile to a job description. ` +
+        `Respond with exactly three short sections, each introduced by a plain uppercase label on its own line:\n` +
+        `MATCHING STRENGTHS (3-5 dash bullets)\nTAILORED SUMMARY (2-3 sentences)\nRESUME BULLETS TO HIGHLIGHT (3-5 dash bullets). ` +
+        `Keep it tight and specific to the job. ` +
+        PLAIN_TEXT_RULES;
+      generationConfig = { temperature: 0.4, maxOutputTokens: 650, topP: 0.9 };
     } else if (action === 'explain') {
       const { projectName, architectureQuery } = payload;
 
       contents = [
         {
           role: 'user',
-          parts: [{ text: `Project: ${projectName}\nInquiry: ${architectureQuery}\n\nAkshit's Project Context:\n${RESUME_DATA_CONTEXT}\n\nProvide an immersive system architecture explanation detailing: how Akshit built it, how to scale it using microservices/containers (e.g. AWS, Nginx, PM2, Docker, Redis), and provide a brief ASCII diagram of the scaled topology followed by detailed architectural guidelines.` }]
+          parts: [{ text: `PROJECT: ${projectName}\nQUESTION: ${architectureQuery}\n\nPORTFOLIO DATA (the only source of truth):\n${RESUME_DATA_CONTEXT}` }]
         }
       ];
-      systemInstruction = 'You are a Principal Software Architect. Explain modular scaling and topologies. Provide precise blueprints. Use ASCII code blocks for flow diagrams and maintain high professional engineering language.';
+      systemInstruction =
+        `You are a senior software architect answering a specific question about Akshit's project. ` +
+        `Give a focused, practical answer in under 200 words: a short explanation followed by 3-6 dash bullets of concrete steps or components ` +
+        `(e.g. AWS, Nginx, PM2, Docker, Redis where relevant). Optionally include one small ASCII diagram inside a plain code block. Stay on the asked question only. ` +
+        PLAIN_TEXT_RULES;
+      generationConfig = { temperature: 0.4, maxOutputTokens: 600, topP: 0.9 };
     } else if (action === 'polish_email') {
       const { name, company, email, rawMessage } = payload;
 
       contents = [
         {
           role: 'user',
-          parts: [{ text: `Recruiter Name: ${name}\nCompany: ${company || 'Enterprise Partner'}\nRecruiter Email: ${email}\nRaw Draft Message:\n${rawMessage}\n\nAkshit's Background: ${RESUME_DATA_CONTEXT}\n\nPlease take this raw draft and polish it into a crisp, exceptionally professional, high-impact introductory outreach email from the recruiter to Akshit, showing deep technical matching with his Next.js, DevOps, or Node.js background. Only output the polished email body text (no subject line or meta-introduction), written in a polished and professional recruiter tone.` }]
+          parts: [{ text: `Recruiter Name: ${name}\nCompany: ${company || 'Enterprise Partner'}\nRecruiter Email: ${email}\n\nRaw draft to polish:\n${rawMessage}` }]
         }
       ];
-      systemInstruction = 'You are a Senior Executive Recruiter. Polish raw drafts to make them highly professional, persuasive, and engaging. Avoid any meta introductions or wrappers; just output the polished text itself.';
+      systemInstruction =
+        `You are a professional editor. Rewrite the recruiter's raw draft into a polished, concise outreach email body addressed to Akshit. ` +
+        `Keep it under 120 words, warm but professional, and preserve the sender's original intent and facts. ` +
+        `Output ONLY the email body text. No subject line, no greetings labels, no commentary, no markdown symbols.`;
+      generationConfig = { temperature: 0.6, maxOutputTokens: 350, topP: 0.95 };
     } else {
       return NextResponse.json({ error: 'Invalid action parameter specified' }, { status: 400 });
     }
 
-    const responseStream = await ai.models.generateContentStream({
-      model: 'gemini-3.5-flash',
-      contents,
-      config: {
-        systemInstruction,
-      },
-    });
+    const responseStream = await withRetry(() =>
+      ai.models.generateContentStream({
+        model: MODEL_NAME,
+        contents,
+        config: {
+          systemInstruction,
+          temperature: generationConfig.temperature,
+          maxOutputTokens: generationConfig.maxOutputTokens,
+          topP: generationConfig.topP,
+        },
+      })
+    );
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -191,6 +262,29 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('Gemini Back-end Route Error:', error);
-    return NextResponse.json({ error: error.message || 'Internal connection failure' }, { status: 500 });
+
+    const status = getErrorStatus(error);
+
+    if (status === 503 || status === 429) {
+      return NextResponse.json(
+        {
+          error:
+            'The AI service is experiencing high demand right now. Please wait a few seconds and try again.',
+        },
+        { status: 503 }
+      );
+    }
+
+    if (status === 401 || status === 403) {
+      return NextResponse.json(
+        { error: 'AI service authentication failed. Please check the configured API key.' },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: error?.message || 'Internal connection failure' },
+      { status: 500 }
+    );
   }
 }

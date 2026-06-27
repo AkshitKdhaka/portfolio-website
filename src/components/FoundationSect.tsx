@@ -275,7 +275,7 @@ export default function FoundationSect() {
         {/* Floating Download Resume Button */}
         <div className="absolute top-8 right-4 sm:right-8 z-30">
           <motion.button
-            onClick={generateResumePDF}
+            onClick={() => { generateResumePDF().catch(console.error); }}
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
             className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-[#0a0a0d] border border-[#00d1ff]/20 hover:border-[#00d1ff]/80 text-white hover:text-[#00d1ff] rounded-xl font-mono text-xs uppercase tracking-wide shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_15px_rgba(0,209,255,0.25)] transition-all duration-300 cursor-pointer"

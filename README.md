@@ -1,6 +1,6 @@
-# 🌌 3D Portfolio Narrative of Akshit Kumar Dhaka
+# 🌌 Portfolio Narrative of Akshit Kumar Dhaka
 
-An immersive, production-grade, full-stack 3D vertical scrolling portfolio narrative showcasing **Akshit Kumar Dhaka's** technical achievements, engineering experience, and system designs. Built with **Next.js 15+ (App Router)**, **React 19**, **Framer Motion**, **Three.js / React Three Fiber**, **Tailwind CSS v4**, and leveraging **Google Gemini AI 3.5** as a server-side recruiter companion.
+An immersive, production-grade, full-stack vertical scrolling portfolio narrative showcasing **Akshit Kumar Dhaka's** technical achievements, engineering experience, and system designs. Built with **Next.js 15+ (App Router)**, **React 19**, **Framer Motion**, **HTML5 Canvas**, **Tailwind CSS v4**, and leveraging **Google Gemini AI 3.5** as a server-side recruiter companion.
 
 ---
 
@@ -18,7 +18,7 @@ An immersive, production-grade, full-stack 3D vertical scrolling portfolio narra
    [ CLIENT LAYER ]
    ├─► React 19 & Next.js 15 App Router
    ├─► Framer Motion (micro-animations, entrance cues, parallax)
-   ├─► Three.js / @react-three/fiber (interactive 3D graphics)
+   ├─► HTML5 Canvas 2D (interactive water ripple background)
    └─► Tailwind CSS v4 (fluid layouts, responsive grids)
    
    [ SERVER LAYER ]
@@ -31,7 +31,7 @@ An immersive, production-grade, full-stack 3D vertical scrolling portfolio narra
 | Technology | Category | Purpose |
 | :--- | :--- | :--- |
 | **Next.js 15** | Framework | Server-Side Rendering (SSR), App Router API routing, optimized bundles. |
-| **Three.js / R3F** | Graphics | Custom 3D interactive wave grid simulation matching mouse momentum. |
+| **HTML5 Canvas 2D** | Graphics | Custom interactive water ripple simulation with mouse tracking and droplet physics. |
 | **Framer Motion** | Animation | Advanced viewport entrance triggers, slide-ins, and step-based timeline. |
 | **Tailwind v4** | Styling | Modern CSS styling with instant fluid utility classes. |
 | **Gemini 3.5 Flash** | Artificial Intelligence | Server-side API powering Chat, Resume Tailoring, and Architecture audits. |
@@ -62,7 +62,7 @@ The codebase is organized with high-cohesion, modular patterns:
 │   │       ├── gemini/       # POST Route: Proxies chatbot, tailor, and architecture calls safely
 │   │       └── github/       # GET Route: Hydrates real-time developer statistics
 │   ├── components/
-│   │   ├── WaterBackground.tsx   # Custom 3D-like, theme-adapted, mouse-tracking cyber grid canvas
+│   │   ├── WaterBackground.tsx   # Canvas 2D water ripple background with theme-adaptive colors
 │   │   ├── HeroSect.tsx          # Section 0: Fullscreen entrance portal & quick links console
 │   │   ├── JourneySect.tsx       # Section 1: Interactive step-based professional achievements
 │   │   ├── WorkshopSect.tsx      # Section 2: Core case studies with metric dials & tech stacks
@@ -78,9 +78,9 @@ The codebase is organized with high-cohesion, modular patterns:
 
 ## 🎯 Groundbreaking Features in Detail
 
-### 1. 🏞️ Theme-Adaptive 3D Cinematic Cyber-Ocean Canvas
-Designed in `src/components/WaterBackground.tsx`, a raw `<canvas>` context simulates an interactive 3D perspective holographic cyber mesh. 
-- **Interactive Fluid Forces:** Tracks user mouse coordinates with dynamic friction updates. Moving your mouse creates concentric ripple waves on the grid lines.
+### 1. 🏞️ Theme-Adaptive Cinematic Cyber-Ocean Canvas
+Designed in `src/components/WaterBackground.tsx`, a raw HTML5 `<canvas>` 2D context simulates an interactive water surface with ripple physics and atmospheric gradients.
+- **Interactive Fluid Forces:** Tracks user mouse coordinates with dynamic friction updates. Moving your mouse creates concentric ripple waves across the canvas.
 - **Scroll Parallax Resonance:** As the user scrolls through the portfolio, the canvas's radial ocean-floor gradient smoothly interpolates between different colors matching the vibe of each active division (e.g., journey transition, database workshop, AI workspace).
 - **Theme Coupling:** Automatically adjusts its color schemes when the theme is toggled. In light mode, grid lines soften into a premium sky-blue hue (`rgba(2, 132, 199, 0.08)`), and the dark backdrop transitions to an elegant off-white canvas.
 

@@ -3,14 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { 
-  Terminal, 
   ShieldCheck, 
-  Compass, 
-  Code, 
-  Layout, 
-  Github, 
-  Linkedin, 
-  Mail,
   Home,
   User,
   History,
@@ -19,8 +12,6 @@ import {
   Sparkles,
   Menu,
   X,
-  Play,
-  Pause,
   ArrowUp
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -39,14 +30,11 @@ import WorkshopSect from './components/WorkshopSect';
 import FoundationSect from './components/FoundationSect';
 import AiCopilotSect from './components/AiCopilotSect';
 import InteractiveFooter from './components/InteractiveFooter';
-import SourceOverlay from './components/SourceOverlay';
 import { contactInfo } from './data';
 import { ambientSynth } from './lib/ambientSynth';
 
 export default function App() {
   const [activeSection, setActiveSection] = useState(0);
-  const [isDemoMode, setIsDemoMode] = useState(false);
-  const [isSourceOpen, setIsSourceOpen] = useState(false);
   const [webGlSupported, setWebGlSupported] = useState(true);
   const [isSynthPlaying, setIsSynthPlaying] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -112,6 +100,15 @@ export default function App() {
   // Permanently force dark mode on mount
   useEffect(() => {
     document.documentElement.classList.remove('light');
+  }, []);
+
+  // Always open at the top: disable the browser's automatic scroll
+  // restoration and reset the scroll position on (re)load.
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
   }, []);
 
   // Section Refs for scroll targeting and Intersection Observing
@@ -186,25 +183,64 @@ export default function App() {
     };
   }, []);
 
-  // Automated Presentation Demo Mode Effect (slow hands-free scroll)
-  useEffect(() => {
-    if (!isDemoMode) return;
+  // Custom eased smooth-scroll engine. Native scrollIntoView/scroll-behavior
+  // is browser-controlled and feels inconsistent; this gives buttery, uniform
+  // easing with a distance-aware duration and cancels cleanly if interrupted.
+  const scrollAnimRef = useRef<number | null>(null);
 
-    const interval = setInterval(() => {
-      const nextIndex = (activeSection + 1) % 7;
-      const targetRefs = [portalRef, heroRef, journeyRef, workshopRef, foundationRef, aiCopilotRef, contactRef];
-      scrollToRef(targetRefs[nextIndex]);
-    }, 7500); // 7.5 seconds per section for a perfectly legible, relaxed tour
+  const smoothScrollTo = (targetY: number) => {
+    if (scrollAnimRef.current !== null) {
+      cancelAnimationFrame(scrollAnimRef.current);
+    }
 
-    return () => clearInterval(interval);
-  }, [isDemoMode, activeSection]);
+    const startY = window.scrollY;
+    const distance = targetY - startY;
+    if (Math.abs(distance) < 2) return;
+
+    // Scale duration with distance, clamped for snappy-yet-smooth feel.
+    const duration = Math.min(Math.max(Math.abs(distance) / 2.2, 550), 1150);
+    const easeInOutCubic = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    let startTime: number | null = null;
+    const step = (now: number) => {
+      if (startTime === null) startTime = now;
+      const progress = Math.min((now - startTime) / duration, 1);
+      window.scrollTo(0, startY + distance * easeInOutCubic(progress));
+      if (progress < 1) {
+        scrollAnimRef.current = requestAnimationFrame(step);
+      } else {
+        scrollAnimRef.current = null;
+      }
+    };
+    scrollAnimRef.current = requestAnimationFrame(step);
+  };
 
   // Smooth scroll helper
   const scrollToRef = (ref: React.RefObject<HTMLDivElement | null>) => {
     if (ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth' });
+      const top = ref.current.getBoundingClientRect().top + window.scrollY;
+      smoothScrollTo(top);
     }
   };
+
+  // Intercept in-page hash links (e.g. footer "Top / Journey / Workshop")
+  // so they use the same eased smooth-scroll instead of an instant jump.
+  useEffect(() => {
+    const handleAnchorClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement)?.closest?.('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!anchor) return;
+      const id = anchor.getAttribute('href')?.slice(1);
+      if (!id) return;
+      const el = document.getElementById(id);
+      if (!el) return;
+      e.preventDefault();
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      smoothScrollTo(top);
+    };
+    document.addEventListener('click', handleAnchorClick);
+    return () => document.removeEventListener('click', handleAnchorClick);
+  }, []);
 
   const navItems = [
     { label: 'Water Portal', index: 0, ref: portalRef, icon: Home },
@@ -277,7 +313,7 @@ export default function App() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00d1ff]"></span>
           </span>
           <span className="font-mono text-[9px] text-[#00d1ff] tracking-wider uppercase">
-            {isDemoMode ? 'Autoplay Presentation Active' : 'Active Dispatch: Noida'}
+            Developer Active
           </span>
         </div>
 
@@ -311,35 +347,6 @@ export default function App() {
               </>
             )}
           </button>
-
-          <button
-            onClick={() => setIsDemoMode(!isDemoMode)}
-            className={`flex items-center gap-2 px-2.5 py-1.5 border transition-all cursor-pointer text-[10px] font-mono rounded-none ${
-              isDemoMode 
-                ? 'bg-[#00d1ff]/15 border-[#00d1ff] text-[#00d1ff] shadow-[0_0_15px_rgba(0,209,255,0.25)] font-semibold'
-                : 'bg-white/5 border-white/10 text-white/50 hover:text-white hover:border-white/30'
-            }`}
-            title="Toggle Hands-Free Presentation Auto-Scroll"
-          >
-            {isDemoMode ? (
-              <>
-                <Pause className="w-3 h-3 text-[#00d1ff] animate-pulse" />
-                <span className="uppercase tracking-wider text-[9px]">Demo Active</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-3 h-3 text-white/60" />
-                <span className="uppercase tracking-wider text-[9px]">Demo Mode</span>
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={() => setIsSourceOpen(true)}
-            className="px-3.5 py-1.5 bg-[#00d1ff]/10 border border-[#00d1ff]/20 text-xs font-mono text-[#00d1ff] rounded-none hover:bg-[#00d1ff] hover:text-black hover:shadow-[0_0_15px_rgba(0,209,255,0.3)] transition-all cursor-pointer"
-          >
-            Payload JSON
-          </button>
         </div>
       </header>
 
@@ -362,12 +369,24 @@ export default function App() {
                 {item.label}
               </span>
               
-              <div className="relative flex items-center justify-center">
-                <span className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                  isActive 
-                    ? 'bg-[#00d1ff] scale-125 shadow-[0_0_10px_rgba(0,209,255,1)]' 
-                    : 'bg-white/10 group-hover:bg-white/40'
-                }`} />
+              <div className="relative flex items-center justify-center w-2.5 h-2.5">
+                {/* Smoothly sliding glow ring that animates between dots */}
+                {isActive && (
+                  <motion.span
+                    layoutId="hud-active-indicator"
+                    className="absolute inset-[-5px] rounded-full border border-[#00d1ff]/70 bg-[#00d1ff]/15 shadow-[0_0_12px_rgba(0,209,255,0.7)]"
+                    transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.7 }}
+                  />
+                )}
+                <motion.span
+                  animate={{ scale: isActive ? 1.15 : 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                  className={`w-2.5 h-2.5 rounded-full transition-colors duration-300 ${
+                    isActive
+                      ? 'bg-[#00d1ff]'
+                      : 'bg-white/10 group-hover:bg-white/40'
+                  }`}
+                />
               </div>
             </button>
           );
@@ -394,15 +413,20 @@ export default function App() {
                 {isActive && (
                   <motion.span
                     layoutId="bottom-nav-active-pill"
-                    layout="position"
                     className="absolute inset-0 bg-[#00d1ff]/10 border border-[#00d1ff]/30 rounded-full -z-10 shadow-[0_0_15px_rgba(0,209,255,0.2)]"
-                    transition={{ type: "spring", stiffness: 350, damping: 35, mass: 0.8 }}
+                    transition={{ type: "spring", stiffness: 420, damping: 34, mass: 0.7 }}
                   />
                 )}
                 
-                <Icon className={`w-4 h-4 transition-transform duration-300 group-hover:scale-110 ${
-                  isActive ? 'text-[#00d1ff] drop-shadow-[0_0_8px_rgba(0,209,255,0.5)]' : 'text-white/45 group-hover:text-white/85'
-                }`} />
+                <motion.div
+                  animate={{ scale: isActive ? 1.12 : 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 26 }}
+                  className="group-hover:scale-110 transition-transform duration-300"
+                >
+                  <Icon className={`w-4 h-4 ${
+                    isActive ? 'text-[#00d1ff] drop-shadow-[0_0_8px_rgba(0,209,255,0.5)]' : 'text-white/45 group-hover:text-white/85'
+                  }`} />
+                </motion.div>
 
                 {/* Cyberpunk style small elegant floating tooltip bubble */}
                 <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3.5 px-2.5 py-1.5 bg-[#07070a]/95 border border-[#00d1ff]/20 text-[9px] uppercase tracking-wider text-[#00d1ff] rounded-none opacity-0 pointer-events-none group-hover:opacity-100 transition-all duration-200 shadow-[0_4px_15px_rgba(0,0,0,0.6)] whitespace-nowrap font-mono">
@@ -575,7 +599,6 @@ export default function App() {
         <div id="hero" ref={heroRef} className="min-h-screen flex items-center justify-center snap-section">
           <HeroSect 
             onExplore={() => scrollToRef(journeyRef)} 
-            onViewSource={() => setIsSourceOpen(true)} 
           />
         </div>
 
@@ -644,13 +667,6 @@ export default function App() {
           <InteractiveFooter />
         </motion.div>
       </main>
-
-      {/* Interactive JSON Source Code IDE Overlay modal */}
-      <AnimatePresence>
-        {isSourceOpen && (
-          <SourceOverlay onClose={() => setIsSourceOpen(false)} />
-        )}
-      </AnimatePresence>
 
       {/* Floating Scroll to Top button */}
       <AnimatePresence>

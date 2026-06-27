@@ -48,6 +48,7 @@ export default function InteractiveFooter() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState<'idle' | 'success' | 'compiling'>('idle');
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [polishing, setPolishing] = useState(false);
   const [polishError, setPolishError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -70,21 +71,42 @@ export default function InteractiveFooter() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !message) return;
 
     setStatus('compiling');
-    
-    // Simulate compilation of contact communication
-    setTimeout(() => {
+    setSubmitError(null);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, company, email, message }),
+      });
+
+      if (!response.ok) {
+        const data = await response
+          .json()
+          .catch(() => ({ error: 'Transmission failed. Please try again.' }));
+        throw new Error(data.error || 'Transmission failed. Please try again.');
+      }
+
       setStatus('success');
-      
-      // Beautifully trigger a prefilled mailto draft to recruit Akshit
-      const subject = encodeURIComponent(`Inquiry from ${name} (${company || 'Enterprise Partner'})`);
-      const body = encodeURIComponent(`Hi Akshit,\n\n${message}\n\nBest regards,\n${name}\n${email}`);
-      window.location.href = `mailto:${contactInfo.email}?subject=${subject}&body=${body}`;
-    }, 1200);
+      setName('');
+      setCompany('');
+      setEmail('');
+      setMessage('');
+
+      // Re-enable the form after a short confirmation window
+      setTimeout(() => setStatus('idle'), 5000);
+    } catch (err: any) {
+      console.error(err);
+      setStatus('idle');
+      setSubmitError(
+        err.message || 'The dispatch server was unreachable. Please email directly instead.'
+      );
+    }
   };
 
   const handleAiPolish = async () => {
@@ -379,11 +401,11 @@ export default function InteractiveFooter() {
                   {status === 'compiling' && (
                     <>
                       <Sparkles className="w-4 h-4 animate-spin text-black" />
-                      <span>Compiling Request Schema...</span>
+                      <span>Dispatching Secure Packet...</span>
                     </>
                   )}
                   {status === 'success' && (
-                    <span>Drafted Successfully!</span>
+                    <span>Message Sent!</span>
                   )}
                 </button>
               </div>
@@ -399,8 +421,22 @@ export default function InteractiveFooter() {
                 >
                   <Sparkles className="w-4 h-4 text-[#00d1ff] shrink-0" />
                   <p className="font-sans text-xs text-cyan-200">
-                    Your default email client has been summoned to dispatch the communication secure packet. Thank you!
+                    Message dispatched successfully! It has landed directly in Akshit's inbox. Thank you for reaching out.
                   </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {submitError && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3"
+                >
+                  <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                  <p className="font-sans text-xs text-red-300">{submitError}</p>
                 </motion.div>
               )}
             </AnimatePresence>

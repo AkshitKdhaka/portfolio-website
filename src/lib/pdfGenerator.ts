@@ -1,4 +1,3 @@
-import { jsPDF } from 'jspdf';
 import { 
   fullName, 
   mainTitle, 
@@ -11,7 +10,11 @@ import {
   certifications 
 } from '../data';
 
-export function generateResumePDF() {
+export async function generateResumePDF() {
+  // Load jsPDF on demand so this heavy library is code-split out of the
+  // initial page bundle and only fetched when the user downloads the CV.
+  const { jsPDF } = await import('jspdf');
+
   // Create an A4 PDF document (portrait, millimeters, A4 size: 210mm x 297mm)
   const doc = new jsPDF({
     orientation: 'portrait',
