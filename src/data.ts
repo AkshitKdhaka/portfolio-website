@@ -6,7 +6,6 @@ export const bioSummary = "Engineering high-performance digital solutions with a
 
 export const contactInfo = {
   email: "akshitkumardhaka99@gmail.com",
-  phone: "9997386442",
   linkedin: "https://www.linkedin.com/in/akshit-kumar-dhaka-a38028238/",
   github: "https://github.com/AkshitKdhaka"
 };

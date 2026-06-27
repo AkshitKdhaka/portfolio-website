@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Phone, Linkedin, Github, Send, Sparkles, Terminal, Copy, Check, AlertTriangle } from 'lucide-react';
+import { Mail, Linkedin, Github, Send, Sparkles, Terminal, Copy, Check, AlertTriangle } from 'lucide-react';
 import { contactInfo, fullName } from '../data';
 
 const containerVariants = {
@@ -253,19 +253,6 @@ export default function InteractiveFooter() {
                 </button>
               </div>
             </div>
-
-            <a 
-              href={`tel:${contactInfo.phone}`}
-              className="group flex items-center gap-4 bg-[#0a0b0d] border border-white/10 hover:border-[#00d1ff]/40 p-4 rounded-xl transition-all duration-300"
-            >
-              <div className="w-10 h-10 rounded-lg bg-[#00d1ff]/10 flex items-center justify-center text-[#00d1ff] group-hover:scale-110 transition-transform">
-                <Phone className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="font-mono text-[9px] text-white/40 uppercase block tracking-wider">Direct Handset</span>
-                <span className="font-mono text-sm text-[#00d1ff]">{contactInfo.phone}</span>
-              </div>
-            </a>
           </div>
 
           <div className="flex gap-4 pt-4">

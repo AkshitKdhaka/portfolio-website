@@ -44,7 +44,6 @@ Bio: Engineering high-performance digital solutions with absolute precision and 
 Location: Noida, India
 Contact:
 - Email: akshitkumardhaka99@gmail.com
-- Phone: +91-9997386442
 - LinkedIn: https://www.linkedin.com/in/akshit-kumar-dhaka-a38028238/
 - GitHub: https://github.com/AkshitKdhaka
 

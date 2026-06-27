@@ -12,7 +12,8 @@ import {
   Sparkles,
   Menu,
   X,
-  ArrowUp
+  ArrowUp,
+  FileDown
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -32,6 +33,8 @@ import AiCopilotSect from './components/AiCopilotSect';
 import InteractiveFooter from './components/InteractiveFooter';
 import { contactInfo } from './data';
 import { ambientSynth } from './lib/ambientSynth';
+
+const RESUME_PDF_URL = '/Akshit_Kumar_Dhaka_Resume.pdf';
 
 export default function App() {
   const [activeSection, setActiveSection] = useState(0);
@@ -88,6 +91,18 @@ export default function App() {
       ambientSynth.start();
       setIsSynthPlaying(true);
     }
+  };
+
+  const handleResumeDownload = () => {
+    window.open(RESUME_PDF_URL, '_blank', 'noopener,noreferrer');
+
+    const link = document.createElement('a');
+    link.href = RESUME_PDF_URL;
+    link.download = 'Akshit_Kumar_Dhaka_Resume.pdf';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Turn off ambient synth automatically on unmount to assure memory release
@@ -318,6 +333,19 @@ export default function App() {
         </div>
 
         <div className="flex gap-2 sm:gap-3 items-center">
+          <motion.button
+            type="button"
+            onClick={handleResumeDownload}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            className="flex items-center gap-2 px-2.5 py-1.5 bg-[#00d1ff]/10 border border-[#00d1ff]/40 hover:border-[#00d1ff] text-[#00d1ff] hover:shadow-[0_0_15px_rgba(0,209,255,0.25)] transition-all cursor-pointer text-[10px] font-mono rounded-none uppercase tracking-wider"
+            title="Download Resume PDF"
+            aria-label="Download Resume PDF"
+          >
+            <FileDown className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Download Resume</span>
+            <span className="inline sm:hidden">Resume</span>
+          </motion.button>
           <button
             onClick={toggleAmbientSynth}
             className={`flex items-center gap-2 px-2.5 py-1.5 border transition-all cursor-pointer text-[10px] font-mono rounded-none ${

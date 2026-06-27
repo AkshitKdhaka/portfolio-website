@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Code, Server, Database, Cloud, GraduationCap, Award, CheckCircle, FileDown, Github, Star, GitBranch, Users, RefreshCw, Activity } from 'lucide-react';
+import { Code, Server, Database, Cloud, GraduationCap, Award, CheckCircle, Github, Star, GitBranch, Users, RefreshCw, Activity } from 'lucide-react';
 import { technicalSkills, education, certifications } from '../data';
-import { generateResumePDF } from '../lib/pdfGenerator';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -272,22 +271,6 @@ export default function FoundationSect() {
         viewport={{ once: true, margin: "-100px" }}
         className="w-full"
       >
-        {/* Floating Download Resume Button */}
-        <div className="absolute top-8 right-4 sm:right-8 z-30">
-          <motion.button
-            onClick={() => { generateResumePDF().catch(console.error); }}
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-[#0a0a0d] border border-[#00d1ff]/20 hover:border-[#00d1ff]/80 text-white hover:text-[#00d1ff] rounded-xl font-mono text-xs uppercase tracking-wide shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_15px_rgba(0,209,255,0.25)] transition-all duration-300 cursor-pointer"
-            aria-label="Download generated PDF Resume"
-            title="Download PDF Resume"
-          >
-            <FileDown className="w-4 h-4 text-[#00d1ff]" />
-            <span className="hidden sm:inline">Download Resume</span>
-            <span className="inline sm:hidden">Download</span>
-          </motion.button>
-        </div>
-
         {/* Narrative Section Header */}
         <motion.div variants={headerVariants} className="mb-20 flex flex-col items-center text-center">
           <div className="font-mono text-xs text-[#00d1ff] tracking-[0.4em] uppercase mb-3">
