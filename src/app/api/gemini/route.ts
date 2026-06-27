@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     // Guard representing missing API keys to provide clear developer workflow
     if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'MY_GEMINI_API_KEY') {
       return NextResponse.json({
-        error: 'Gemini API Key is not configured. Please add GEMINI_API_KEY to your Secrets or Environment variables.'
+        error: 'Gemini API Key is not configured. Please add GEMINI_API_KEY to your .env file.'
       }, { status: 401 });
     }
 
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
       apiKey: process.env.GEMINI_API_KEY,
       httpOptions: {
         headers: {
-          'User-Agent': 'aistudio-build',
+          'User-Agent': 'akshit-portfolio/1.0',
         },
       },
     });

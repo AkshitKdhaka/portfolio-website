@@ -46,7 +46,6 @@ The codebase is organized with high-cohesion, modular patterns:
 
 ```
 ├── .env.example              # Environment variables template for Gemini API & GitHub Token
-├── metadata.json             # AI Studio App name, permissions, and major capabilities
 ├── package.json              # Direct and dev dependencies, compiler & runner commands
 ├── tsconfig.json             # TypeScript static typing presets
 ├── postcss.config.mjs        # PostCSS configuration using Tailwind CSS v4

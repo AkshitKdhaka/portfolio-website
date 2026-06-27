@@ -349,7 +349,7 @@ export default function AiCopilotSect() {
               <span className="font-semibold block font-mono text-xs uppercase tracking-wider">CONNECTION COMPROMISED</span>
               <p className="text-sm text-yellow-200/80 mt-1">{errorMessage}</p>
               <p className="text-xs text-yellow-300/60 mt-2 font-mono">
-                Hint: Check if process.env.GEMINI_API_KEY is configured correctly under Settings &gt; Secrets in AI Studio.
+                Hint: Check that GEMINI_API_KEY is set in your .env file.
               </p>
             </div>
           </motion.div>

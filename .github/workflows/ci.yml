@@ -1,0 +1,45 @@
+name: CI
+
+# Continuous Integration: validates every push and pull request by
+# installing dependencies, linting, type-checking, and building the app.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel an in-progress run if a newer commit is pushed to the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Lint, Type-check & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+        env:
+          # The build must not fail if runtime secrets are absent. All API
+          # routes read env vars at request time (dynamic = 'force-dynamic'),
+          # so these are only placeholders to keep the build deterministic.
+          NEXT_TELEMETRY_DISABLED: "1"
