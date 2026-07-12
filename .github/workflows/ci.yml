@@ -61,13 +61,46 @@ jobs:
           # Build on a small instance can take a while; allow extra time.
           command_timeout: 20m
           script: |
-            set -e
+            set -euo pipefail
             cd ~/portfolio-website
+
+            echo "==> Disk before cleanup"
+            df -h .
+
+            # Free space from prior deploys before the new build peaks.
+            # Old `.next` (esp. leftover standalone trees) + npm cache are the
+            # usual ENOSPC culprits on small EC2 root volumes.
+            rm -rf .next
+            npm cache clean --force || true
+            # Drop orphaned Next/PM2 temp junk if present.
+            rm -rf /tmp/next-* "$HOME/.npm/_logs" || true
+
+            echo "==> Disk after cleanup"
+            df -h .
+
+            # Fail early if the root volume is nearly full (under ~1GB free).
+            avail_kb=$(df -Pk . | awk 'NR==2 {print $4}')
+            if [ "$avail_kb" -lt 1048576 ]; then
+              echo "ERROR: Only ${avail_kb}KB free on deploy volume — need at least 1GB."
+              echo "SSH in and free disk (docker system prune, old logs, apt clean, etc.)."
+              exit 1
+            fi
+
             git fetch --all
             git reset --hard origin/main
             npm ci
+
             # Raise Node's heap limit so the build has headroom (backed by swap
             # on small instances). Type-checking is skipped via next.config.ts.
             export NODE_OPTIONS="--max-old-space-size=2048"
+            export NEXT_TELEMETRY_DISABLED=1
             npm run build
+
+            # DevDependencies are only needed for build/lint; drop them after
+            # so the running app holds less disk between deploys.
+            npm prune --omit=dev
+
             pm2 restart portfolio --update-env
+
+            echo "==> Disk after deploy"
+            df -h .

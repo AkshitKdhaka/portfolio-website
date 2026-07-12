@@ -22,9 +22,10 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
 
-  // Produce a self-contained server bundle (.next/standalone) that is ideal
-  // for containerized/serverless AWS deployments in the upcoming CD pipeline.
-  output: "standalone",
+  // Do NOT enable `output: "standalone"` here. PM2 runs `next start`, which
+  // needs the normal `.next` output + `node_modules`. Standalone mode copies a
+  // second near-full tree into `.next/standalone` and frequently hits ENOSPC
+  // on small EC2 root volumes during CD.
 };
 
 export default nextConfig;
