@@ -597,7 +597,7 @@ export default function App() {
                 AKSHIT KUMAR DHAKA
               </h1>
               <p className="font-mono text-[9px] sm:text-[10px] text-white/40 tracking-[0.2em] uppercase font-light">
-                Systems Engineer &bull; Noida, IN
+                Full Stack Developer &bull; Noida, IN
               </p>
             </motion.div>
           </div>

@@ -72,7 +72,7 @@ export default function JourneySect() {
             variants={headerVariants}
             className="font-sans text-base sm:text-lg text-gray-400 max-w-2xl mt-4"
           >
-            A narrative of engineering milestones—bringing robust database scaling, server efficiency audits, and Next.js frontends to production.
+            A narrative of engineering milestones—shipping CRM systems, NestJS microservices, Microsoft Graph integrations, and Next.js frontends to production.
           </motion.p>
           <motion.div 
             variants={headerVariants}

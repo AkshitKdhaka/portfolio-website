@@ -178,7 +178,7 @@ function ProjectCard({ proj, idx }: ProjectCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent z-10 pointer-events-none" />
         
         {proj.imageUrl ? (
-          proj.name === "Adaptive Prep Framework" ? (
+          proj.name === "Adaptive Learning Platform" ? (
             <motion.div
               className="w-[90%] max-w-[360px] flex flex-col items-center justify-center relative select-none"
               style={{

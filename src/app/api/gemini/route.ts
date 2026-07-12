@@ -39,73 +39,81 @@ async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
 
 const RESUME_DATA_CONTEXT = `
 Full Name: AKSHIT KUMAR DHAKA
-Profession: Full Stack Developer & Technical Architect
-Bio: Engineering high-performance digital solutions with absolute precision and modern institutional aesthetics.
-Location: Noida, India
+Profession: Full Stack Developer
+Bio: Full Stack Developer with 2+ years of experience building scalable web applications using Next.js, React, TypeScript, Node.js, NestJS, Prisma, PostgreSQL, and MongoDB. Experienced in developing REST APIs, integrating Microsoft Graph API, implementing secure authentication systems, optimizing SEO, and deploying scalable cloud-native applications using AWS and Azure with CI/CD pipelines. Passionate about building performant, secure, and user-centric applications.
+Location: Noida, India (current role remote for Tedekstra Limited, UK)
 Contact:
+- Phone: 9997386442
 - Email: akshitkumardhaka99@gmail.com
 - LinkedIn: https://www.linkedin.com/in/akshit-kumar-dhaka-a38028238/
 - GitHub: https://github.com/AkshitKdhaka
 
 Technical Skills:
-- Languages: HTML, CSS, Java, JavaScript, TypeScript, SQL
-- Frameworks & Tools: Node.js, Next.js, React, Tailwind CSS, GitHub, VS Code, Postman, NestJS, Prisma
-- Databases: MongoDB, MySQL
-- DevOps & Cloud: AWS EC2, GitHub Actions, CI/CD Pipelines, Nginx, PM2, SSH, Let's Encrypt, Certbot, Environ config
-- Other Core Skills: Git, API Integration, SEO Optimization, Performance Tuning, Server Monitoring, SSR, SSG
+- Languages: JavaScript, TypeScript, Java, SQL, HTML5, CSS3
+- Frontend: React.js, Next.js, Tailwind CSS, Responsive Design, SSR, SSG
+- Backend: Node.js, NestJS, Express.js, REST APIs, JWT, RBAC, Microservices
+- Developer Tools: Git, GitHub, VS Code, Postman, Figma, Google Analytics, Lighthouse
+- Database & ORM: MongoDB, PostgreSQL, Prisma ORM, MySQL, Redis
+- Cloud & DevOps: AWS EC2, GitHub Actions, CI/CD Pipelines, Nginx, PM2, SSH, Docker, Environment Configuration
+- Platform & Integrations: SEO Optimization, Microsoft Graph API, Azure Communication Services, Firebase, Technical SEO
 
 Professional Experience:
-1. Full Stack Developer at Tedekstra Limited (Noida, India) | Nov 2025 - Present
-   - Developed responsive, SEO-optimized web application using Next.js and TypeScript, improving page performance by 30%.
-   - Created server-side rendered (SSR) and static site generation (SSG) pages to optimize rendering speeds across global devices.
-   - Engineered high performance RESTful APIs to manage customer data, workflows, and inventory, reducing response margins by 20%.
-   - Delivered a unified stack utilizing Next.js, NestJS, and Prisma, ensuring outstanding type safety and consistent code hygiene.
-   - Tech Stack: Next.js, TypeScript, NestJS, Prisma, Tailwind CSS, REST APIs
+1. Full Stack Developer at Tedekstra Limited (Remote, UK) | Nov 2025 - Present
+   - Designed OAuth mailbox integration using Microsoft Graph API and Azure, automating calendar processing while ensuring GDPR-compliant workflows.
+   - Designed and ran production Node-Cron job systems for quote reminders, installation reviews, product expiry alerts, lead reactivation, lead contact reminders, contract expiration checks, and referrer reconciliation—automating over 80% of recurring tasks.
+   - Implemented secure JWT authentication and granular RBAC (superadmin, admin and staff data scoping) across leads, customers, quotes, contracts, residuals, and support tickets, reducing unauthorized access risk and speeding role-based workflows by ~30%.
+   - Developed multi-provider payment residual processing (Trust Payments, Clover, Modern World) with Excel parsing, batch deduplication, commission aggregation, and PDF reports, processing 1,000+ rows per upload and improving report turnaround by 3x.
+   - Built a scalable CDR/SDR usage-to-invoice ETL pipeline with charge-matrix rating, VAT/margin logic, unmatched-usage reconciliation, and PDF invoicing, improving billing throughput by ~50% and cutting manual finance work by ~40%.
+   - Engineered category-based quote/contract PDF generation and e-signature workflows (mobile, broadband, payments, insurance), including payment-mandate capture, reducing contract cycle time by ~35%.
+   - Built outbound email workflows with Microsoft 365 / Microsoft Graph API (with Azure Communication Services fallback) for quotes, lead alerts, renewals, and operational notifications, improving delivery reliability by ~25%.
+   - Delivered end-to-end CRM modules for lead pipeline, product catalog, multi-site customers, referrer commissions, profit tracking, and CI/CD deployments, sustaining 3x traffic spikes while keeping API response times improved by ~50% on critical endpoints.
+   - Integrated Next.js frontend with NestJS microservices using Prisma ORM, enabling scalable and type-safe API communication.
+   - Tech Stack: Next.js, NestJS, Prisma, TypeScript, Microsoft Graph API, Azure, JWT, RBAC, Node-Cron, PostgreSQL
 
 2. Software Developer (SDE-1) at Genius Labs (Noida, India) | Jul 2024 - Jun 2025
-   - Built and maintained core web applications using Next.js and MongoDB, boosting core loading response times by 30%.
-   - Automated CI/CD workflows via GitHub Actions for AWS EC2, guaranteeing secure, fast, and automated application releases.
-   - Integrated Firebase Authentication with customizable roles, delivering secure and seamless login workflows.
-   - Achieved a 98/100 Google Lighthouse score by utilizing the Next.js App Router and dynamic structured metadata standard schemas.
-   - Tech Stack: React, Next.js, MongoDB, AWS EC2, Firebase, GitHub Actions
+   - Built and maintained web applications using Next.js and MongoDB, improving page load times by 30%.
+   - Automated CI/CD deployments on AWS EC2 using GitHub Actions, reducing deployment time by 70% and enabling faster production releases.
+   - Integrated Firebase JWT authentication into Next.js, reducing unauthorized login attempts and enabling secure, seamless login experiences akin to streaming services.
+   - Integrated Easebuzz payment gateway and TrustSignal SMS OTP verification, improving transaction success rate by 25%.
+   - Integrated Google Analytics, JSON-LD structured data and Next.js App Router, achieving a 98/100 Lighthouse SEO score.
+   - Tech Stack: Next.js, MongoDB, AWS EC2, Firebase, GitHub Actions, Easebuzz, Google Analytics
 
 3. Web Developer at Freelance (Noida, India) | Mar 2023 - May 2023
-   - Built beautiful high-efficiency client websites using HTML5, CSS3, and modern interactive JavaScript with optimized load metrics.
-   - Worked closely with clients and design teams to translate creative UX mocks into beautiful fully response layouts.
-   - Optimized cross-browser assets and layouts, delivering crisp visual precision and flawless mobile behavior.
-   - Tech Stack: HTML5, CSS3, JavaScript, SEO, Responsive Design
+   - Developed and maintained responsive Next.js applications, improving page performance by 30% through SSR, SSG and code optimization.
+   - Implemented API integration enabling secure, type-safe and efficient frontend-backend communication in a full-stack application.
+   - Integrated third-party RESTful APIs to manage customer data, inventory, and workflows, reducing API response time by 20%.
+   - Converted UI/UX designs into pixel-perfect, mobile-first interfaces while improving performance and accessibility.
+   - Delivered responsive and SEO-friendly web solutions by collaborating directly with clients and meeting project deadlines.
+   - Tech Stack: Next.js, REST APIs, SSR, SSG, SEO, Responsive Design
 
 Key Projects:
 1. Global News Live (https://globalnews.live) | Real-Time News Aggregation Platform
-   - Configured Nginx reverse proxy and PM2 process manager for automatic process crash recovery, achieving 99.9% system uptime.
-   - Implemented server-side API endpoints with Next.js SSR, reducing server response time by 35% and keeping critical secrets safe from public browser exposure.
-   - Created dynamic pagination, custom categorizations (7+ divisions), and robust user queries with clean UI feedback loops.
-   - Tech Stack: Next.js, TypeScript, Nginx, PM2, AWS EC2, Tailwind CSS
-   - Metric: 99.9% Uptime achievement
+   - Built a production-ready news aggregation platform using Next.js, TypeScript, and Tailwind CSS, integrating NewsAPI, deployed on AWS EC2 with GitHub Actions CI/CD pipeline achieving 99.9% uptime, enabling zero-downtime deployments on every push or merge to the main branch.
+   - Configured Nginx reverse proxy for routing traffic and PM2 for process management, ensuring automatic app recovery after crashes or reboots. Managed environment variables securely using .env.local and GitHub Secrets for deployment.
+   - Implemented server-side API routes with secure SSR to fetch and aggregate news data, reducing API response time by 35% and eliminating client-side API key exposure; advanced search with pagination and category filtering across 7+ major categories.
+   - Tech Stack: Next.js, TypeScript, NewsAPI, Nginx, PM2, AWS EC2, GitHub Actions, Tailwind CSS
+   - Metric: 99.9% Uptime
 
-2. SEO Blog Platform | Educational Search-Engine Optimized CMS
-   - Configured advanced JSON-LD structured schema metadata and semantic HTML tags to maximize accessibility and visibility indexes.
-   - Utilized Next.js Server Components, static site caching optimizations, automatic XML sitemaps, and strict WCAG mobile compliance.
-   - Designed clean editorial reading experiences that achieved perfect Core Web Vitals rankings and lightning fast execution.
-   - Tech Stack: Next.js, React, TypeScript, JSON-LD, SSG, Tailwind CSS
-   - Metric: 98/100 Lighthouse score
+2. SEO-Optimized Educational Blog Platform | Search-Engine Optimized Educational CMS
+   - Developed an SEO-optimized educational blog platform using Next.js, React, TypeScript, and Tailwind CSS, significantly boosting online presence and organic traffic.
+   - Optimized performance and accessibility with Server Components, SSG, JSON-LD schemas, dynamic metadata, automated sitemap and robots.txt, semantic HTML, and WCAG compliance for improved Core Web Vitals.
+   - Tech Stack: Next.js, React, TypeScript, JSON-LD, SSG, Tailwind CSS, SEO
 
-3. Adaptive Prep Framework | Secure Student Exam Platform
-   - Engineered adaptive complexity modules tracking user assessment performance with 97% accuracy, reducing cognitive stress by 30%.
-   - Achieved a 92% student satisfaction rate and a 35% measurable upgrade in state exam readiness benchmarks.
-   - Optimized client response layers to accommodate real-time interactive exam countdowns and responsive graphic score reviews.
-   - Tech Stack: React, JavaScript, CSS3, Algorithms, Adaptive Tech
-   - Metric: 35%+ Readiness Lift
+3. Adaptive Learning Platform | Personalized Exam Preparation Framework
+   - Developed a secure, personalized exam preparation framework for grades 9–12, achieving a 92% user satisfaction rate and a 35% improvement in test readiness among students.
+   - Implemented adaptive learning that monitored student progress with 97% accuracy, dynamically adjusting content complexity to boost engagement by 50% and reduce cognitive overload by 30%.
+   - Tech Stack: React, JavaScript, Adaptive Learning, Algorithms
+   - Metric: 35% Readiness Lift
 
 Education:
 - B.Tech in Computer Science Engineering | Delhi Technical Campus, Noida (2020 - 2024) | Grade: 8.99 CGPA
-- Senior Secondary Education (Mathematics and Computer Science) | St Mary's School, Bijnor (2018 - 2019) | Grade: 8.02 CGPA
+- Senior Secondary Education (Mathematics and Computer Science) | St Mary's School (ICSE), Bijnor (2018 - 2019) | Grade: 8.02 CGPA
 
 Certifications & Training:
-- Web Development Training Certification (Internshala, 2022)
-- Python (Core and Advanced) Internship Certification (Edufabrica Pvt Ltd, 2022)
-- Data Structures & Algorithms Using Java (NPTEL, 2023)
-- Software Developer Intern Certification (STEM Quest Education Pvt Ltd, 2024)
+- Certification of Training: Web Development (Internshala, 2022)
+- Certificate of Internship: Python (Core and Advanced) (Edufabrica Pvt Ltd, 2022)
+- NPTEL Certification: Data Structure and Algorithms Using Java (NPTEL, 2023)
+- Certificate of Internship: Software Developer Intern (STEM Quest Education Pvt Ltd, 2024)
 `;
 
 export async function POST(req: NextRequest) {

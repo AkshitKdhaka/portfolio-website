@@ -102,7 +102,7 @@ export default function AiCopilotSect() {
   const mockJobDescriptions = [
     {
       title: "Senior SDE - Tedekstra Competitor",
-      content: "Looking for a seasoned Full Stack Developer with heavy hands-on experience in Next.js Server Components, NestJS, Prisma databases tuning, Nginx proxies, PM2 server management, and deploying CI/CD workflows on AWS Web Services."
+      content: "Looking for a seasoned Full Stack Developer with hands-on experience in Next.js, NestJS, Prisma, JWT/RBAC, Microsoft Graph API integrations, Azure services, ETL/billing pipelines, Nginx, PM2, and CI/CD deployments on AWS."
     },
     {
       title: "React & Node Developer - Fintech",

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Linkedin, Github, Send, Sparkles, Terminal, Copy, Check, AlertTriangle } from 'lucide-react';
+import { Mail, Linkedin, Github, Send, Sparkles, Terminal, Copy, Check, AlertTriangle, Phone } from 'lucide-react';
 import { contactInfo, fullName } from '../data';
 
 const containerVariants = {
@@ -186,7 +186,7 @@ export default function InteractiveFooter() {
           </h2>
           
           <p className="font-sans text-base text-gray-400 leading-relaxed">
-            Open to technical discussions regarding Next.js stacks, automated database architecture, developer operations, and high-performance engineering collaborations.
+            Open to technical discussions regarding Next.js stacks, NestJS microservices, Microsoft Graph integrations, cloud deployments, and high-performance engineering collaborations.
           </p>
 
           <div className="space-y-4 pt-4">
@@ -251,6 +251,18 @@ export default function InteractiveFooter() {
                     </>
                   )}
                 </button>
+              </div>
+            </div>
+
+            <div className="group flex items-center gap-4 bg-[#0a0b0d] border border-white/10 hover:border-[#00d1ff]/40 p-4 rounded-xl transition-all duration-300">
+              <div className="w-10 h-10 rounded-lg bg-[#00d1ff]/10 flex items-center justify-center text-[#00d1ff] group-hover:scale-110 group-hover:shadow-[0_0_10px_rgba(0,209,255,0.2)] transition-all">
+                <Phone className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="font-mono text-[9px] text-white/40 uppercase block tracking-wider">Direct Line</span>
+                <a href={`tel:${contactInfo.phone}`} className="font-mono text-sm text-[#00d1ff] transition-all group-hover:text-white select-all">
+                  {contactInfo.phone}
+                </a>
               </div>
             </div>
           </div>

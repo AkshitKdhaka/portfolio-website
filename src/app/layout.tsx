@@ -3,8 +3,9 @@ import { fontVariables } from '../lib/fonts';
 import '../index.css';
 
 export const metadata: Metadata = {
-  title: 'Akshit Kumar Dhaka | Full Stack Developer & Technical Architect',
-  description: 'Engineering high-performance digital solutions with absolute structural integrity, automated developer operations pipelines, and immersive aesthetics.',
+  title: 'Akshit Kumar Dhaka | Full Stack Developer',
+  description:
+    'Full Stack Developer with 2+ years of experience building scalable web apps with Next.js, React, TypeScript, NestJS, Prisma, AWS, and Azure.',
 };
 
 export default function RootLayout({

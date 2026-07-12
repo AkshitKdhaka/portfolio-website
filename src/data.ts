@@ -1,27 +1,41 @@
 import { Experience, Project, Education, Certification, TechnicalSkills } from './types';
 
 export const fullName = "AKSHIT KUMAR DHAKA";
-export const mainTitle = "Full Stack Developer & Technical Architect";
-export const bioSummary = "Engineering high-performance digital solutions with absolute precision and modern institutional aesthetics.";
+export const mainTitle = "Full Stack Developer";
+export const bioSummary =
+  "Full Stack Developer with 2+ years of experience building scalable web applications using Next.js, React, TypeScript, Node.js, NestJS, Prisma, PostgreSQL, and MongoDB. Experienced in developing REST APIs, integrating Microsoft Graph API, implementing secure authentication systems, optimizing SEO, and deploying scalable cloud-native applications using AWS and Azure with CI/CD pipelines. Passionate about building performant, secure, and user-centric applications.";
 
 export const contactInfo = {
   email: "akshitkumardhaka99@gmail.com",
+  phone: "9997386442",
   linkedin: "https://www.linkedin.com/in/akshit-kumar-dhaka-a38028238/",
   github: "https://github.com/AkshitKdhaka"
 };
 
 export const technicalSkills: TechnicalSkills = {
-  languages: ["HTML", "CSS", "Java", "JavaScript", "TypeScript", "SQL"],
+  languages: ["JavaScript", "TypeScript", "Java", "SQL", "HTML5", "CSS3"],
   frameworks_and_tools: [
-    "Node.js",
+    "React.js",
     "Next.js",
-    "React",
     "Tailwind CSS",
+    "Node.js",
+    "NestJS",
+    "Express.js",
+    "REST APIs",
+    "JWT",
+    "RBAC",
+    "Microservices",
+    "SSR",
+    "SSG",
+    "Git",
     "GitHub",
     "VS Code",
-    "Postman"
+    "Postman",
+    "Figma",
+    "Google Analytics",
+    "Lighthouse"
   ],
-  databases: ["MongoDB", "MySQL"],
+  databases: ["PostgreSQL", "MongoDB", "MySQL", "Redis", "Prisma ORM"],
   devops_and_cloud: [
     "AWS EC2",
     "GitHub Actions",
@@ -29,16 +43,16 @@ export const technicalSkills: TechnicalSkills = {
     "Nginx",
     "PM2",
     "SSH",
-    "Let's Encrypt",
-    "Certbot",
-    "Environment Config"
+    "Docker",
+    "Environment Configuration"
   ],
   other: [
-    "Git",
-    "API Integration",
     "SEO Optimization",
-    "Performance Tuning",
-    "Server Monitoring"
+    "Technical SEO",
+    "Microsoft Graph API",
+    "Azure Communication Services",
+    "Firebase",
+    "Responsive Design"
   ]
 };
 
@@ -46,16 +60,32 @@ export const experiences: Experience[] = [
   {
     title: "Full Stack Developer",
     company: "Tedekstra Limited",
-    location: "Noida, India",
+    location: "Remote, UK",
     start: "Nov 2025",
     end: "Present",
     highlights: [
-      "Developed responsive, SEO-optimized web application using Next.js and TypeScript, improving page performance by 30%.",
-      "Created server-side rendered (SSR) and static site generation (SSG) pages to optimize rendering speeds across global devices.",
-      "Engineered high performance RESTful APIs to manage customer data, workflows, and inventory, reducing response margins by 20%.",
-      "Delivered a unified stack utilizing Next.js, NestJS, and Prisma, ensuring outstanding type safety and consistent code hygiene."
+      "Designed OAuth mailbox integration using Microsoft Graph API and Azure, automating calendar processing while ensuring GDPR-compliant workflows.",
+      "Designed and ran production Node-Cron job systems for quote reminders, installation reviews, product expiry alerts, lead reactivation, lead contact reminders, contract expiration checks, and referrer reconciliation—automating over 80% of recurring tasks.",
+      "Implemented secure JWT authentication and granular RBAC (superadmin, admin and staff data scoping) across leads, customers, quotes, contracts, residuals, and support tickets, reducing unauthorized access risk and speeding role-based workflows by ~30%.",
+      "Developed multi-provider payment residual processing (Trust Payments, Clover, Modern World) with Excel parsing, batch deduplication, commission aggregation, and PDF reports, processing 1,000+ rows per upload and improving report turnaround by 3x.",
+      "Built a scalable CDR/SDR usage-to-invoice ETL pipeline with charge-matrix rating, VAT/margin logic, unmatched-usage reconciliation, and PDF invoicing, improving billing throughput by ~50% and cutting manual finance work by ~40%.",
+      "Engineered category-based quote/contract PDF generation and e-signature workflows (mobile, broadband, payments, insurance), including payment-mandate capture, reducing contract cycle time by ~35%.",
+      "Built outbound email workflows with Microsoft 365 / Microsoft Graph API (with Azure Communication Services fallback) for quotes, lead alerts, renewals, and operational notifications, improving delivery reliability by ~25%.",
+      "Delivered end-to-end CRM modules for lead pipeline, product catalog, multi-site customers, referrer commissions, profit tracking, and CI/CD deployments, sustaining 3x traffic spikes while keeping API response times improved by ~50% on critical endpoints.",
+      "Integrated Next.js frontend with NestJS microservices using Prisma ORM, enabling scalable and type-safe API communication."
     ],
-    techStack: ["Next.js", "TypeScript", "NestJS", "Prisma", "Tailwind CSS", "REST APIs"]
+    techStack: [
+      "Next.js",
+      "NestJS",
+      "Prisma",
+      "TypeScript",
+      "Microsoft Graph API",
+      "Azure",
+      "JWT",
+      "RBAC",
+      "Node-Cron",
+      "PostgreSQL"
+    ]
   },
   {
     title: "Software Developer (SDE-1)",
@@ -64,12 +94,21 @@ export const experiences: Experience[] = [
     start: "Jul 2024",
     end: "Jun 2025",
     highlights: [
-      "Built and maintained core web applications using Next.js and MongoDB, boosting core loading response times by 30%.",
-      "Automated CI/CD workflows via GitHub Actions for AWS EC2, guaranteeing secure, fast, and automated application releases.",
-      "Integrated Firebase Authentication with customizable roles, delivering secure and seamless login workflows.",
-      "Achieved a 98/100 Google Lighthouse score by utilizing the Next.js App Router and dynamic structured metadata standard schemas."
+      "Built and maintained web applications using Next.js and MongoDB, improving page load times by 30%.",
+      "Automated CI/CD deployments on AWS EC2 using GitHub Actions, reducing deployment time by 70% and enabling faster production releases.",
+      "Integrated Firebase JWT authentication into Next.js, reducing unauthorized login attempts and enabling secure, seamless login experiences akin to streaming services.",
+      "Integrated Easebuzz payment gateway and TrustSignal SMS OTP verification, improving transaction success rate by 25%.",
+      "Integrated Google Analytics, JSON-LD structured data and Next.js App Router, achieving a 98/100 Lighthouse SEO score."
     ],
-    techStack: ["React", "Next.js", "MongoDB", "AWS EC2", "Firebase", "GitHub Actions"]
+    techStack: [
+      "Next.js",
+      "MongoDB",
+      "AWS EC2",
+      "Firebase",
+      "GitHub Actions",
+      "Easebuzz",
+      "Google Analytics"
+    ]
   },
   {
     title: "Web Developer",
@@ -78,11 +117,13 @@ export const experiences: Experience[] = [
     start: "Mar 2023",
     end: "May 2023",
     highlights: [
-      "Built beautiful high-efficiency client websites using HTML5, CSS3, and modern interactive JavaScript with optimized load metrics.",
-      "Worked closely with clients and design teams to translate creative UX mocks into beautiful fully response layouts.",
-      "Optimized cross-browser assets and layouts, delivering crisp visual precision and flawless mobile behavior."
+      "Developed and maintained responsive Next.js applications, improving page performance by 30% through SSR, SSG and code optimization.",
+      "Implemented API integration enabling secure, type-safe and efficient frontend-backend communication in a full-stack application.",
+      "Integrated third-party RESTful APIs to manage customer data, inventory, and workflows, reducing API response time by 20%.",
+      "Converted UI/UX designs into pixel-perfect, mobile-first interfaces while improving performance and accessibility.",
+      "Delivered responsive and SEO-friendly web solutions by collaborating directly with clients and meeting project deadlines."
     ],
-    techStack: ["HTML5", "CSS3", "JavaScript", "SEO", "Responsive Design"]
+    techStack: ["Next.js", "REST APIs", "SSR", "SSG", "SEO", "Responsive Design"]
   }
 ];
 
@@ -90,44 +131,47 @@ export const projects: Project[] = [
   {
     name: "Global News Live",
     subtitle: "Real-Time News Aggregation Platform",
-    summary: "Production-ready news aggregation platform deploying server-side rendered contents with state-of-the-art system durability.",
+    summary:
+      "Production-ready news aggregation platform built with Next.js, TypeScript, and Tailwind CSS, integrating NewsAPI and deployed on AWS EC2 with GitHub Actions CI/CD for 99.9% uptime.",
     details: [
-      "Configured Nginx reverse proxy and PM2 process manager for automatic process crash recovery, achieving 99.9% system uptime.",
-      "Implemented server-side API endpoints with Next.js SSR, reducing server response time by 35% and keeping critical secrets safe from public browser exposure.",
-      "Created dynamic pagination, custom categorizations (7+ divisions), and robust user queries with clean UI feedback loops."
+      "Built a production-ready news aggregation platform using Next.js, TypeScript, and Tailwind CSS, integrating NewsAPI, deployed on AWS EC2 with GitHub Actions CI/CD pipeline achieving 99.9% uptime, enabling zero-downtime deployments on every push or merge to the main branch.",
+      "Configured Nginx reverse proxy for routing traffic and PM2 for process management, ensuring automatic app recovery after crashes or reboots. Managed environment variables securely using .env.local and GitHub Secrets for deployment.",
+      "Implemented server-side API routes with secure server-side rendering to fetch and aggregate news data, reducing API response time by 35% and improving security by eliminating client-side API key exposure; integrated advanced search with pagination and category-based filtering across 7+ major categories."
     ],
-    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuCoo8RRPpRwi3J9URGvmncAlVIDjmhnRsN8jkRd7LS41MARACBIua7aBX6qKlCw4JRg03k6IKJ_hqWXT8UpOG8PV6I5pktjo9RW-CiNJSVpeJuB-M6LcuODL2qu7Zd15fv03LS8kRW1GZPNfIJFlRuqCb7qq-GF5nEhD6doU-e4x4Pz2jJ5-Qm7Yl0hS6c3OF3FZ3-QbA82MM83UjdYOMrB2cJbKgGpiaNe1KMnDtQdXF2RJdBx8GyBuVvJBB-LA0Sf9BYvX8BmuQuA",
+    imageUrl:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuCoo8RRPpRwi3J9URGvmncAlVIDjmhnRsN8jkRd7LS41MARACBIua7aBX6qKlCw4JRg03k6IKJ_hqWXT8UpOG8PV6I5pktjo9RW-CiNJSVpeJuB-M6LcuODL2qu7Zd15fv03LS8kRW1GZPNfIJFlRuqCb7qq-GF5nEhD6doU-e4x4Pz2jJ5-Qm7Yl0hS6c3OF3FZ3-QbA82MM83UjdYOMrB2cJbKgGpiaNe1KMnDtQdXF2RJdBx8GyBuVvJBB-LA0Sf9BYvX8BmuQuA",
     url: "https://globalnews.live",
-    tags: ["Next.js", "TypeScript", "Nginx", "PM2", "AWS EC2", "Tailwind CSS"],
+    tags: ["Next.js", "TypeScript", "NewsAPI", "Nginx", "PM2", "AWS EC2", "GitHub Actions", "Tailwind CSS"],
     metric: "99.9%",
     metricLabel: "Uptime"
   },
   {
-    name: "SEO Blog Platform",
-    subtitle: "Educational Search-Engine Optimized CMS",
-    summary: "High-performance publishing platform crafted to drive massive search engine exposure and robust core web vitals.",
+    name: "SEO-Optimized Educational Blog Platform",
+    subtitle: "Search-Engine Optimized Educational CMS",
+    summary:
+      "SEO-optimized educational blog platform using Next.js, React, TypeScript, and Tailwind CSS, built to boost organic traffic and Core Web Vitals.",
     details: [
-      "Configured advanced JSON-LD structured schema metadata and semantic HTML tags to maximize accessibility and visibility indexes.",
-      "Utilized Next.js Server Components, static site caching optimizations, automatic XML sitemaps, and strict WCAG mobile compliance.",
-      "Designed clean editorial reading experiences that achieved perfect Core Web Vitals rankings and lightning fast execution."
+      "Developed an SEO-optimized educational blog platform using Next.js, React, TypeScript, and Tailwind CSS, significantly boosting online presence and organic traffic.",
+      "Optimized performance and accessibility by utilizing Server Components, Static Site Generation (SSG), and comprehensive SEO strategies with JSON-LD schemas, dynamic metadata, automated sitemap and robots.txt, semantic HTML, and WCAG-compliant accessibility features."
     ],
-    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuBaZUWsOGJgk4NWRdGWvGjnqMbpRCEAYMC2mbKDLwE1wRvQoezSylFg-iyiRmgl9ytbd8WEMcD_Lsm3Y3kQuOvipnKjVamiQAk8b-E07Ua8pmYts-Rj6WFliY8sKnBDc8PW0w3JW3ySUN7wZ351e4YXGpPoTK1kFcgWOw0M4kiS7K8JtXzpM3UD6AsAff1ZQq6l4csRWC5VU1Gd8IiEQvAb0s4Ee_Lcs5Xc68MYkUsU5kUfjFWwlWCa5VqYneXKZ2jVfyNPRqt3m9HS",
-    tags: ["Next.js", "React", "TypeScript", "JSON-LD", "SSG", "Tailwind CSS"],
-    metric: "98/100",
-    metricLabel: "Lighthouse"
+    imageUrl:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuBaZUWsOGJgk4NWRdGWvGjnqMbpRCEAYMC2mbKDLwE1wRvQoezSylFg-iyiRmgl9ytbd8WEMcD_Lsm3Y3kQuOvipnKjVamiQAk8b-E07Ua8pmYts-Rj6WFliY8sKnBDc8PW0w3JW3ySUN7wZ351e4YXGpPoTK1kFcgWOw0M4kiS7K8JtXzpM3UD6AsAff1ZQq6l4csRWC5VU1Gd8IiEQvAb0s4Ee_Lcs5Xc68MYkUsU5kUfjFWwlWCa5VqYneXKZ2jVfyNPRqt3m9HS",
+    tags: ["Next.js", "React", "TypeScript", "JSON-LD", "SSG", "Tailwind CSS", "SEO"],
+    metric: "CWV",
+    metricLabel: "Optimized"
   },
   {
-    name: "Adaptive Prep Framework",
-    subtitle: "Secure Student Exam Platform",
-    summary: "Personalized exam preparation framework for students, yielding exceptional interactive training and dynamic complexity adjustments.",
+    name: "Adaptive Learning Platform",
+    subtitle: "Personalized Exam Preparation Framework",
+    summary:
+      "Secure, personalized exam preparation framework for grades 9–12 with adaptive complexity and measurable readiness gains.",
     details: [
-      "Engineered adaptive complexity modules tracking user assessment performance with 97% accuracy, reducing cognitive stress by 30%.",
-      "Achieved a 92% student satisfaction rate and a 35% measurable upgrade in state exam readiness benchmarks.",
-      "Optimized client response layers to accommodate real-time interactive exam countdowns and responsive graphic score reviews."
+      "Developed a secure, personalized exam preparation framework for grades 9–12, achieving a 92% user satisfaction rate and a 35% improvement in test readiness among students.",
+      "Implemented an adaptive learning platform that monitored student progress with 97% accuracy, dynamically adjusting content complexity to boost engagement by 50% and reduce cognitive overload by 30%."
     ],
     imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
-    tags: ["React", "JavaScript", "CSS3", "Algorithms", "Adaptive Tech"],
-    metric: "35%+",
+    tags: ["React", "JavaScript", "Adaptive Learning", "Algorithms"],
+    metric: "35%",
     metricLabel: "Readiness Lift"
   }
 ];
@@ -155,22 +199,22 @@ export const education: Education[] = [
 
 export const certifications: Certification[] = [
   {
-    name: "Web Development Training Certification",
+    name: "Certification of Training: Web Development",
     issuer: "Internshala",
     year: "2022"
   },
   {
-    name: "Python (Core and Advanced) Internship Certification",
+    name: "Certificate of Internship: Python (Core and Advanced)",
     issuer: "Edufabrica Pvt Ltd",
     year: "2022"
   },
   {
-    name: "Data Structures & Algorithms Using Java",
+    name: "NPTEL Certification: Data Structure and Algorithms Using Java",
     issuer: "NPTEL",
     year: "2023"
   },
   {
-    name: "Software Developer Intern Certification",
+    name: "Certificate of Internship: Software Developer Intern",
     issuer: "STEM Quest Education Pvt Ltd",
     year: "2024"
   }

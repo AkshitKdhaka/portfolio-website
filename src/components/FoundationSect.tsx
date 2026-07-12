@@ -372,7 +372,7 @@ export default function FoundationSect() {
           </motion.div>
 
           <p className="font-sans text-xs text-gray-400 mt-8 leading-relaxed">
-            Deep alignment with static generation methodologies (SSG, SSR), optimized modular react trees, state managers, and component styles.
+            Deep alignment with SSR/SSG, NestJS microservices, JWT/RBAC auth, and type-safe Prisma data layers.
           </p>
         </motion.div>
 
@@ -393,18 +393,27 @@ export default function FoundationSect() {
           </div>
 
           <div className="space-y-3.5">
-            {technicalSkills.databases.map((db, idx) => (
-              <div key={db} className="flex justify-between items-center border-b border-white/5 pb-2">
-                <span className="font-sans text-sm text-white font-medium">{db}</span>
-                <span className="font-mono text-[10px] text-[#00d1ff] uppercase tracking-wider">
-                  {idx === 0 ? "Production SQL" : "NoSQL Core"}
-                </span>
-              </div>
-            ))}
-            {technicalSkills.other.slice(2, 4).map((tech) => (
+            {technicalSkills.databases.map((db) => {
+              const labelByDb: Record<string, string> = {
+                PostgreSQL: "Production SQL",
+                MySQL: "Relational SQL",
+                MongoDB: "NoSQL Core",
+                Redis: "In-Memory Cache",
+                "Prisma ORM": "Type-Safe ORM",
+              };
+              return (
+                <div key={db} className="flex justify-between items-center border-b border-white/5 pb-2 last:border-b-0">
+                  <span className="font-sans text-sm text-white font-medium">{db}</span>
+                  <span className="font-mono text-[10px] text-[#00d1ff] uppercase tracking-wider">
+                    {labelByDb[db] || "Core"}
+                  </span>
+                </div>
+              );
+            })}
+            {technicalSkills.other.slice(0, 2).map((tech) => (
               <div key={tech} className="flex justify-between items-center border-b border-white/5 pb-2 last:border-b-0">
                 <span className="font-sans text-sm text-white/70">{tech}</span>
-                <span className="font-mono text-[10px] text-gray-500 uppercase">Tuning</span>
+                <span className="font-mono text-[10px] text-gray-500 uppercase">Platform</span>
               </div>
             ))}
           </div>
@@ -444,7 +453,7 @@ export default function FoundationSect() {
           </motion.div>
 
           <p className="font-sans text-xs text-gray-400 mt-6 leading-relaxed">
-            Deploying updates on standalone environments, secure certificates setups (Certbot), robust reverse proxy routes, and CI/CD pipelines.
+            Deploying on AWS EC2 with Docker, Nginx reverse proxies, PM2 process management, and automated GitHub Actions CI/CD pipelines.
           </p>
         </motion.div>
 

@@ -61,7 +61,7 @@ export default function HeroSect({ onExplore }: HeroProps) {
           variants={elementVariants}
           className="font-mono text-sm text-[#00d1ff] uppercase tracking-[0.3em] mb-4 md:mb-6 leading-none select-none"
         >
-          Creative Developer & Architect
+          Full Stack Developer
         </motion.p>
 
         {/* Deep custom Glassmorphic Narrative Card */}
@@ -73,7 +73,7 @@ export default function HeroSect({ onExplore }: HeroProps) {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-[1px] bg-gradient-to-r from-transparent via-[#00d1ff]/50 to-transparent"></div>
 
           <p className="font-sans text-base sm:text-lg md:text-xl text-gray-400 font-light leading-relaxed max-w-2xl mx-auto select-all">
-            Results-driven Software Developer with 2+ years of experience building scalable, high-performance web applications using Next.js, React, TypeScript, Node.js, and MongoDB. Experienced in developing SEO-optimized applications, RESTful APIs, authentication systems, and cloud deployments on AWS. Proficient in CI/CD automation, performance optimization, and modern development practices, with a strong track record of delivering secure, responsive, and business-focused solutions. Passionate about solving complex problems, learning emerging technologies, and contributing to high-impact engineering teams.
+            Full Stack Developer with 2+ years of experience building scalable web applications using Next.js, React, TypeScript, Node.js, NestJS, Prisma, PostgreSQL, and MongoDB. Experienced in developing REST APIs, integrating Microsoft Graph API, implementing secure authentication systems, optimizing SEO, and deploying scalable cloud-native applications using AWS and Azure with CI/CD pipelines. Passionate about building performant, secure, and user-centric applications.
           </p>
         </motion.div>
 

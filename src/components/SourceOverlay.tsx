@@ -16,7 +16,7 @@ export default function SourceOverlay({ onClose }: SourceOverlayProps) {
   const resumeJsonString = JSON.stringify({
     profile: {
       fullName: "AKSHIT KUMAR DHAKA",
-      roles: ["Full Stack Developer", "Technical SDE", "Systems Architect"],
+      roles: ["Full Stack Developer", "Software Developer (SDE-1)", "Web Developer"],
       contact: contactInfo
     },
     experience: experiences.map(exp => ({
