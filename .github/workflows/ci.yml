@@ -65,24 +65,37 @@ jobs:
             cd ~/portfolio-website
 
             echo "==> Disk before cleanup"
-            df -h .
+            df -h /
 
-            # Free space from prior deploys before the new build peaks.
-            # Old `.next` (esp. leftover standalone trees) + npm cache are the
-            # usual ENOSPC culprits on small EC2 root volumes.
-            rm -rf .next
+            # Aggressive free-space pass for small EC2 root volumes (~6–8GB).
+            # node_modules alone is usually ~700–800MB and must go before npm ci.
+            rm -rf .next node_modules
+            rm -rf "$HOME/.npm" /tmp/next-* /tmp/npm-* || true
             npm cache clean --force || true
-            # Drop orphaned Next/PM2 temp junk if present.
-            rm -rf /tmp/next-* "$HOME/.npm/_logs" || true
+
+            # System caches (safe; no password prompt on typical EC2 ubuntu).
+            sudo apt-get clean || true
+            sudo apt-get autoremove -y || true
+            sudo rm -rf /var/cache/apt/archives/*.deb || true
+            sudo journalctl --vacuum-size=50M || true
+
+            # Drop disabled snap revisions (common Ubuntu bloat).
+            if command -v snap >/dev/null 2>&1; then
+              snap list --all 2>/dev/null | awk '/disabled/{print $1, $3}' | while read -r name rev; do
+                sudo snap remove "$name" --revision="$rev" || true
+              done
+            fi
 
             echo "==> Disk after cleanup"
-            df -h .
+            df -h /
 
-            # Fail early if the root volume is nearly full (under ~1GB free).
-            avail_kb=$(df -Pk . | awk 'NR==2 {print $4}')
-            if [ "$avail_kb" -lt 1048576 ]; then
-              echo "ERROR: Only ${avail_kb}KB free on deploy volume — need at least 1GB."
-              echo "SSH in and free disk (docker system prune, old logs, apt clean, etc.)."
+            # Need headroom for npm ci + next build peak (~1.2GB free preferred).
+            avail_kb=$(df -Pk / | awk 'NR==2 {print $4}')
+            if [ "$avail_kb" -lt 1228800 ]; then
+              echo "ERROR: Only ${avail_kb}KB free on deploy volume — need at least ~1.2GB."
+              echo "Expand the EBS root volume (recommend 20GB) or free more space manually."
+              df -h /
+              du -xh --max-depth=1 "$HOME" /var /usr 2>/dev/null | sort -h | tail -n 20 || true
               exit 1
             fi
 
@@ -96,11 +109,11 @@ jobs:
             export NEXT_TELEMETRY_DISABLED=1
             npm run build
 
-            # DevDependencies are only needed for build/lint; drop them after
-            # so the running app holds less disk between deploys.
+            # DevDependencies are only needed for build; drop them so the next
+            # deploy starts with more free disk.
             npm prune --omit=dev
 
             pm2 restart portfolio --update-env
 
             echo "==> Disk after deploy"
-            df -h .
+            df -h /
