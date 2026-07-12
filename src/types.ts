@@ -38,8 +38,16 @@ export interface Certification {
 
 export interface TechnicalSkills {
   languages: string[];
-  frameworks_and_tools: string[];
-  databases: string[];
-  devops_and_cloud: string[];
-  other: string[];
+  frontend: string[];
+  backend: string[];
+  developer_tools: string[];
+  databases_and_orm: string[];
+  cloud_and_devops: string[];
+  platform_and_integrations: string[];
+}
+
+export interface SkillCategory {
+  key: keyof TechnicalSkills;
+  title: string;
+  description: string;
 }
