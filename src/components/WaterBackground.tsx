@@ -168,6 +168,10 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
 
   // Helper to add a physical water wave ripple
   const addRipple = (x: number, y: number, amplitude = 25, frequency = 0.04, speed = 4) => {
+    // Hard cap ripples so scroll + cursor never stack unbounded draw work.
+    if (ripplesRef.current.length >= 14) {
+      ripplesRef.current.shift();
+    }
     ripplesRef.current.push({
       x,
       y,
@@ -222,6 +226,10 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
     if (!ctx) return;
 
     let animationFrameId: number;
+    let scrollIdleTimer: ReturnType<typeof setTimeout> | null = null;
+    const isScrollingRef = { current: false };
+    const pendingMouseRef = { current: null as { x: number; y: number } | null };
+    let mouseRafId: number | null = null;
 
     const handleResize = () => {
       canvas.width = window.innerWidth;
@@ -230,8 +238,22 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
     handleResize();
     window.addEventListener('resize', handleResize);
 
+    // While the page is scrolling, pause heavy cursor FX so native scroll stays smooth.
+    // Effects resume ~140ms after the last scroll/wheel/touch event.
+    const markScrolling = () => {
+      isScrollingRef.current = true;
+      if (scrollIdleTimer) clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 140);
+    };
+    window.addEventListener('scroll', markScrolling, { passive: true });
+    window.addEventListener('wheel', markScrolling, { passive: true });
+    window.addEventListener('touchmove', markScrolling, { passive: true });
+
     // Click handler -> inject major ripple
     const handleCanvasClick = (e: MouseEvent) => {
+      if (isScrollingRef.current) return;
       addRipple(e.clientX, e.clientY, 32, 0.035, 4.5);
       
       // Inject click particles
@@ -250,27 +272,38 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
       }
     };
 
-    // Keep active mouse trails
-    const handleCanvasMouseMove = (e: MouseEvent) => {
-      mousePosRef.current = { x: e.clientX, y: e.clientY };
-      // Skip expensive trail particles while reading content sections.
-      if (activeSectionRef.current > 0) return;
+    // Apply cursor FX at most once per animation frame (mousemove fires far more often).
+    const flushMouseEffects = () => {
+      mouseRafId = null;
+      const pending = pendingMouseRef.current;
+      if (!pending) return;
+      pendingMouseRef.current = null;
 
+      // Don't fight the scroll thread with particle/ripple spawns.
+      if (isScrollingRef.current) return;
+
+      const { x, y } = pending;
       const now = performance.now();
       const last = lastMousePosRef.current;
 
-      const dx = e.clientX - last.x;
-      const dy = e.clientY - last.y;
+      const dx = x - last.x;
+      const dy = y - last.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const timeElapsed = now - last.time;
 
       if (dist > 25 && timeElapsed > 60) {
-        addRipple(e.clientX, e.clientY, 8 + Math.min(dist * 0.15, 12), 0.055, 3.8);
-        lastMousePosRef.current = { x: e.clientX, y: e.clientY, time: now };
+        addRipple(x, y, 8 + Math.min(dist * 0.15, 12), 0.055, 3.8);
+        lastMousePosRef.current = { x, y, time: now };
       }
 
-      // Spawn glowing bioluminescent bubbles and plankton trailing particle effect
-      const spawnCount = Math.max(1, Math.min(Math.floor(dist * 0.25) + 1, 4));
+      // Cap trail particle count so long sessions don't balloon memory/CPU.
+      if (trailParticlesRef.current.length > 100) {
+        trailParticlesRef.current.splice(0, trailParticlesRef.current.length - 80);
+      }
+
+      // Slightly lighter spawn off-portal; still visible on every section.
+      const maxSpawn = activeSectionRef.current === 0 ? 4 : 2;
+      const spawnCount = Math.max(1, Math.min(Math.floor(dist * 0.2) + 1, maxSpawn));
       for (let i = 0; i < spawnCount; i++) {
         const isBubble = Math.random() > 0.45;
         const offsetX = (Math.random() - 0.5) * 16;
@@ -278,19 +311,19 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
 
         trailParticlesRef.current.push({
           id: Math.random(),
-          x: e.clientX + offsetX,
-          y: e.clientY + offsetY,
+          x: x + offsetX,
+          y: y + offsetY,
           size: isBubble ? 0.8 + Math.random() * 1.5 : 0.6 + Math.random() * 1.2,
           maxSize: isBubble ? 3.5 + Math.random() * 3.5 : 1.8 + Math.random() * 1.5,
           speedX: (Math.random() - 0.5) * 0.7,
-          speedY: -0.5 - Math.random() * 1.2, // Floats smoothly upwards like bubbles in liquid
+          speedY: -0.5 - Math.random() * 1.2,
           opacity: 0.75 + Math.random() * 0.25,
-          decay: 0.007 + Math.random() * 0.013, // Slow ethereal fade
+          decay: 0.007 + Math.random() * 0.013,
           color: Math.random() > 0.6
-            ? `rgba(${activeThemeRef.current.glowRgb}, 0.8)` // neon water cyan
+            ? `rgba(${activeThemeRef.current.glowRgb}, 0.8)`
             : Math.random() > 0.35
-              ? `rgba(${activeThemeRef.current.glowRgbSecondary}, 0.7)` // deep lagoon turquoise
-              : 'rgba(240, 253, 250, 0.95)', // sparkling silver-white bubbles
+              ? `rgba(${activeThemeRef.current.glowRgbSecondary}, 0.7)`
+              : 'rgba(240, 253, 250, 0.95)',
           isBubble,
           swaySpeed: 1.2 + Math.random() * 2.2,
           swayOffset: Math.random() * Math.PI * 2
@@ -298,12 +331,22 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
       }
     };
 
+    // Cursor trails work on every section; heavy work is deferred/skipped during scroll.
+    const handleCanvasMouseMove = (e: MouseEvent) => {
+      mousePosRef.current = { x: e.clientX, y: e.clientY };
+      if (isScrollingRef.current) return;
+      pendingMouseRef.current = { x: e.clientX, y: e.clientY };
+      if (mouseRafId === null) {
+        mouseRafId = requestAnimationFrame(flushMouseEffects);
+      }
+    };
+
     window.addEventListener('click', handleCanvasClick);
-    window.addEventListener('mousemove', handleCanvasMouseMove);
+    window.addEventListener('mousemove', handleCanvasMouseMove, { passive: true });
 
     // Initialize decorative ambient particles
     const localParticles: Particle[] = [];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 40; i++) {
       localParticles.push({
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight,
@@ -315,14 +358,14 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
       });
     }
 
-    // DRAW ENGINE LOOP — full rate on portal, throttled while scrolling content
-    // so section paint isn't competing with a constant 60fps canvas.
+    // DRAW ENGINE LOOP — full rate when idle/moving cursor; lighter while scrolling.
     let frameCount = 0;
     const render = () => {
       frameCount += 1;
-      const sIndex = activeSectionRef.current;
-      // Off-portal: run every 3rd frame (~20fps). Skip work when idle.
-      if (sIndex > 0 && frameCount % 3 !== 0) {
+      const scrolling = isScrollingRef.current;
+
+      // During scroll, draw every other frame to leave main-thread budget for scrolling.
+      if (scrolling && frameCount % 2 !== 0) {
         animationFrameId = requestAnimationFrame(render);
         return;
       }
@@ -334,6 +377,7 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
       let oceanColor1 = activeThemeRef.current.oceanColor1; // Deep dark space coordinates
       let oceanColor2 = activeThemeRef.current.oceanColor2Base; // Indigo oceanic floor
       
+      const sIndex = activeSectionRef.current;
       if (sIndex >= 1 && sIndex <= 5) {
         oceanColor2 = activeThemeRef.current.oceanColor2Overlays[sIndex - 1];
       }
@@ -770,9 +814,14 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      if (mouseRafId !== null) cancelAnimationFrame(mouseRafId);
+      if (scrollIdleTimer) clearTimeout(scrollIdleTimer);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('click', handleCanvasClick);
       window.removeEventListener('mousemove', handleCanvasMouseMove);
+      window.removeEventListener('scroll', markScrolling);
+      window.removeEventListener('wheel', markScrolling);
+      window.removeEventListener('touchmove', markScrolling);
     };
   }, []);
 
