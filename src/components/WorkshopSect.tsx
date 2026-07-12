@@ -11,34 +11,33 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.1,
+      staggerChildren: 0.05,
+      delayChildren: 0.03,
     },
   },
 };
 
 const headerVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.8,
+      duration: 0.45,
       ease: [0.16, 1, 0.3, 1] as const,
     },
   },
 };
 
 const cardEntryVariants = {
-  hidden: { opacity: 0, y: 35 },
+  hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       type: "spring" as const,
-      stiffness: 110,
-      damping: 16,
-      mass: 0.8,
+      stiffness: 280,
+      damping: 28,
     },
   },
 };
@@ -379,7 +378,7 @@ export default function WorkshopSect() {
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, amount: 0.12 }}
         className="w-full"
       >
         {/* Narrative Section Header */}

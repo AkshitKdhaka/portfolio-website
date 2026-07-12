@@ -10,34 +10,32 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1,
+      staggerChildren: 0.05,
+      delayChildren: 0.03,
     },
   },
 };
 
 const colLeftVariants = {
-  hidden: { opacity: 0, x: -30 },
+  hidden: { opacity: 0, x: -16 },
   visible: {
     opacity: 1,
     x: 0,
     transition: {
-      type: "spring" as const,
-      stiffness: 100,
-      damping: 15,
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1] as const,
     },
   },
 };
 
 const colRightVariants = {
-  hidden: { opacity: 0, x: 30 },
+  hidden: { opacity: 0, x: 16 },
   visible: {
     opacity: 1,
     x: 0,
     transition: {
-      type: "spring" as const,
-      stiffness: 100,
-      damping: 15,
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1] as const,
     },
   },
 };
@@ -171,7 +169,7 @@ export default function InteractiveFooter() {
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, amount: 0.12 }}
         className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
       >
         

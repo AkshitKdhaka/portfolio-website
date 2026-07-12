@@ -34,7 +34,7 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.05,
-      delayChildren: 0.1,
+      delayChildren: 0.03,
     },
   },
 };
@@ -44,33 +44,33 @@ const sectionContainerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.1,
+      staggerChildren: 0.05,
+      delayChildren: 0.03,
     },
   },
 };
 
 const headerVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.8,
+      duration: 0.45,
       ease: [0.16, 1, 0.3, 1] as const,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { y: 15, opacity: 0 },
+  hidden: { y: 12, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
     transition: {
       type: "spring" as const,
-      stiffness: 260,
-      damping: 20,
+      stiffness: 280,
+      damping: 28,
     },
   },
 };
@@ -79,21 +79,20 @@ const staggeredContainerVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.15,
+      staggerChildren: 0.05,
     },
   },
 };
 
 const cardEntryVariants = {
-  hidden: { opacity: 0, y: 35 },
+  hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       type: "spring" as const,
-      stiffness: 110,
-      damping: 16,
-      mass: 0.8,
+      stiffness: 280,
+      damping: 28,
     },
   },
 };
@@ -291,7 +290,7 @@ export default function FoundationSect() {
         variants={sectionContainerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, amount: 0.12 }}
         className="w-full"
       >
         {/* Narrative Section Header */}
@@ -320,7 +319,7 @@ export default function FoundationSect() {
         variants={staggeredContainerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, amount: 0.12 }}
       >
         {skillCategories.map((category) => {
           const Icon = skillCategoryIcons[category.key];
@@ -393,7 +392,7 @@ export default function FoundationSect() {
         variants={cardEntryVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, amount: 0.12 }}
       >
         {/* Futuristic cyan framing highlights */}
         <div className="absolute top-2 left-2 w-1.5 h-1.5 border-t border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
@@ -510,20 +509,20 @@ export default function FoundationSect() {
                   ref={heatmapContainerRef} 
                   className="bg-[#121217]/40 border border-white/5 p-6 rounded-xl hover:border-[#00d1ff]/50 transition-all relative overflow-hidden"
                   variants={{
-                    hidden: { opacity: 0, y: 25 },
+                    hidden: { opacity: 0, y: 16 },
                     visible: {
                       opacity: 1,
                       y: 0,
                       transition: {
-                        duration: 0.6,
+                        duration: 0.45,
                         ease: "easeOut",
-                        staggerChildren: 0.005, // smooth cascading stagger to nested children
+                        staggerChildren: 0.005,
                       }
                     }
                   }}
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{ once: true, margin: "-100px" }}
+                  viewport={{ once: true, amount: 0.12 }}
                 >
                   
                   {/* GLOWING NEON CYBERPUNK LOADING OVERLAY */}
@@ -602,7 +601,7 @@ export default function FoundationSect() {
                           }}
                           initial="hidden"
                           whileInView="visible"
-                          viewport={{ once: true, margin: "-40px" }}
+                          viewport={{ once: true, amount: 0.12 }}
                         >
                           {buildContributionWeeks().map((week, wIdx) => (
                             <motion.div 
@@ -727,7 +726,7 @@ export default function FoundationSect() {
         variants={staggeredContainerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, amount: 0.12 }}
       >
         
         {/* Education list bento */}
