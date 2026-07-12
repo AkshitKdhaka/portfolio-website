@@ -13,34 +13,32 @@ const sectionVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.15,
+      staggerChildren: 0.05,
+      delayChildren: 0.03,
     }
   }
 };
 
 const elementVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.8,
+      duration: 0.45,
       ease: [0.16, 1, 0.3, 1] as const
     }
   }
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 18 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      type: "spring" as const,
-      stiffness: 90,
-      damping: 15,
-      mass: 0.8
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1] as const,
     }
   }
 };
@@ -53,7 +51,7 @@ export default function HeroSect({ onExplore }: HeroProps) {
         variants={sectionVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, amount: 0.12 }}
       >
         
         {/* Animated label */}

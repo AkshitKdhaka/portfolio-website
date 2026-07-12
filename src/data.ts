@@ -1,4 +1,4 @@
-import { Experience, Project, Education, Certification, TechnicalSkills } from './types';
+import { Experience, Project, Education, Certification, TechnicalSkills, SkillCategory } from './types';
 
 export const fullName = "AKSHIT KUMAR DHAKA";
 export const mainTitle = "Full Stack Developer";
@@ -12,31 +12,14 @@ export const contactInfo = {
   github: "https://github.com/AkshitKdhaka"
 };
 
+/** Resume-aligned technical skills — each field stays in its own category. */
 export const technicalSkills: TechnicalSkills = {
   languages: ["JavaScript", "TypeScript", "Java", "SQL", "HTML5", "CSS3"],
-  frameworks_and_tools: [
-    "React.js",
-    "Next.js",
-    "Tailwind CSS",
-    "Node.js",
-    "NestJS",
-    "Express.js",
-    "REST APIs",
-    "JWT",
-    "RBAC",
-    "Microservices",
-    "SSR",
-    "SSG",
-    "Git",
-    "GitHub",
-    "VS Code",
-    "Postman",
-    "Figma",
-    "Google Analytics",
-    "Lighthouse"
-  ],
-  databases: ["PostgreSQL", "MongoDB", "MySQL", "Redis", "Prisma ORM"],
-  devops_and_cloud: [
+  frontend: ["React.js", "Next.js", "Tailwind CSS", "Responsive Design", "SSR", "SSG"],
+  backend: ["Node.js", "NestJS", "Express.js", "REST APIs", "JWT", "RBAC", "Microservices"],
+  developer_tools: ["Git", "GitHub", "VS Code", "Postman", "Figma", "Google Analytics", "Lighthouse"],
+  databases_and_orm: ["MongoDB", "PostgreSQL", "Prisma ORM", "MySQL", "Redis"],
+  cloud_and_devops: [
     "AWS EC2",
     "GitHub Actions",
     "CI/CD Pipelines",
@@ -46,15 +29,53 @@ export const technicalSkills: TechnicalSkills = {
     "Docker",
     "Environment Configuration"
   ],
-  other: [
+  platform_and_integrations: [
     "SEO Optimization",
-    "Technical SEO",
     "Microsoft Graph API",
     "Azure Communication Services",
     "Firebase",
-    "Responsive Design"
+    "Technical SEO"
   ]
 };
+
+/** Display order and labels for The Foundation tech-stack grid. */
+export const skillCategories: SkillCategory[] = [
+  {
+    key: "languages",
+    title: "Languages",
+    description: "Core languages used across full-stack product work."
+  },
+  {
+    key: "frontend",
+    title: "Frontend",
+    description: "Modern React/Next.js UI with SSR, SSG, and responsive design."
+  },
+  {
+    key: "backend",
+    title: "Backend",
+    description: "APIs, auth, and microservice patterns with Node and NestJS."
+  },
+  {
+    key: "developer_tools",
+    title: "Developer Tools",
+    description: "Day-to-day tooling for build, debug, design, and measurement."
+  },
+  {
+    key: "databases_and_orm",
+    title: "Database & ORM",
+    description: "SQL, NoSQL, cache, and type-safe Prisma data access."
+  },
+  {
+    key: "cloud_and_devops",
+    title: "Cloud & DevOps",
+    description: "AWS hosting, CI/CD, reverse proxies, and process management."
+  },
+  {
+    key: "platform_and_integrations",
+    title: "Platform & Integrations",
+    description: "SEO, Microsoft Graph, Azure, Firebase, and platform services."
+  }
+];
 
 export const experiences: Experience[] = [
   {

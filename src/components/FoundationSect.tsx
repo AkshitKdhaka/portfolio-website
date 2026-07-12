@@ -2,8 +2,31 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Code, Server, Database, Cloud, GraduationCap, Award, CheckCircle, Github, Star, GitBranch, Users, RefreshCw, Activity } from 'lucide-react';
-import { technicalSkills, education, certifications } from '../data';
+import { Code, Server, Database, Cloud, GraduationCap, Award, CheckCircle, Github, Star, GitBranch, Users, RefreshCw, Activity, Wrench, Layers, Plug } from 'lucide-react';
+import { technicalSkills, skillCategories, education, certifications } from '../data';
+import type { TechnicalSkills } from '../types';
+import type { LucideIcon } from 'lucide-react';
+
+const skillCategoryIcons: Record<keyof TechnicalSkills, LucideIcon> = {
+  languages: Code,
+  frontend: Layers,
+  backend: Server,
+  developer_tools: Wrench,
+  databases_and_orm: Database,
+  cloud_and_devops: Cloud,
+  platform_and_integrations: Plug,
+};
+
+/** Grid span per category so the resume fields stay readable and distinct. */
+const skillCategorySpan: Record<keyof TechnicalSkills, string> = {
+  languages: "md:col-span-4",
+  frontend: "md:col-span-4",
+  backend: "md:col-span-4",
+  developer_tools: "md:col-span-6",
+  databases_and_orm: "md:col-span-6",
+  cloud_and_devops: "md:col-span-6",
+  platform_and_integrations: "md:col-span-6",
+};
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -11,7 +34,7 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.05,
-      delayChildren: 0.1,
+      delayChildren: 0.03,
     },
   },
 };
@@ -21,33 +44,33 @@ const sectionContainerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.1,
+      staggerChildren: 0.05,
+      delayChildren: 0.03,
     },
   },
 };
 
 const headerVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.8,
+      duration: 0.45,
       ease: [0.16, 1, 0.3, 1] as const,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { y: 15, opacity: 0 },
+  hidden: { y: 12, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
     transition: {
       type: "spring" as const,
-      stiffness: 260,
-      damping: 20,
+      stiffness: 280,
+      damping: 28,
     },
   },
 };
@@ -56,21 +79,20 @@ const staggeredContainerVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.15,
+      staggerChildren: 0.05,
     },
   },
 };
 
 const cardEntryVariants = {
-  hidden: { opacity: 0, y: 35 },
+  hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       type: "spring" as const,
-      stiffness: 110,
-      damping: 16,
-      mass: 0.8,
+      stiffness: 280,
+      damping: 28,
     },
   },
 };
@@ -268,7 +290,7 @@ export default function FoundationSect() {
         variants={sectionContainerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, amount: 0.12 }}
         className="w-full"
       >
         {/* Narrative Section Header */}
@@ -297,166 +319,53 @@ export default function FoundationSect() {
         variants={staggeredContainerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, amount: 0.12 }}
       >
-        
-        {/* Bento box 1: Languages (5 cols on md) */}
-        <motion.div 
-          className="md:col-span-5 bg-[#0a0a0d] border border-white/15 hover:border-[#00d1ff]/80 focus-within:border-[#00d1ff]/80 p-8 rounded-xl relative overflow-hidden group hover:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] focus-within:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] transition-all duration-300 shadow-2xl outline-none"
-          variants={cardEntryVariants}
-        >
-          {/* Futuristic cyan framing highlights to ground the card visually */}
-          <div className="absolute top-2 left-2 w-1.5 h-1.5 border-t border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          <div className="absolute top-2 right-2 w-1.5 h-1.5 border-t border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          <div className="absolute bottom-2 left-2 w-1.5 h-1.5 border-b border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          <div className="absolute bottom-2 right-2 w-1.5 h-1.5 border-b border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          
-          <div className="flex items-center gap-3 mb-6">
-            <Code className="w-5 h-5 text-[#00d1ff]" />
-            <h3 className="font-display font-semibold text-lg text-white uppercase tracking-wider">Languages</h3>
-          </div>
-          
-          <motion.div 
-            className="flex flex-wrap gap-2.5"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {technicalSkills.languages.map((lang) => (
-              <motion.span
-                key={lang}
-                variants={itemVariants}
-                className="px-3.5 py-1.5 bg-[#151515]/80 border border-white/5 text-xs text-on-surface hover:border-[#00d1ff]/20 rounded-xl font-mono tracking-wider transition-colors inline-block"
-              >
-                {lang}
-              </motion.span>
-            ))}
-          </motion.div>
-          
-          <p className="font-sans text-xs text-gray-400 mt-8 leading-relaxed">
-            Strictly typified implementations using modern TypeScript patterns alongside high performance backend environments.
-          </p>
-        </motion.div>
+        {skillCategories.map((category) => {
+          const Icon = skillCategoryIcons[category.key];
+          const skills = technicalSkills[category.key];
 
-        {/* Bento box 2: Frameworks (7 cols on md) */}
-        <motion.div 
-          className="md:col-span-7 bg-[#0a0a0d] border border-white/15 hover:border-[#00d1ff]/80 focus-within:border-[#00d1ff]/80 p-8 rounded-xl relative overflow-hidden group hover:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] focus-within:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] transition-all duration-300 shadow-2xl outline-none"
-          variants={cardEntryVariants}
-        >
-          {/* Futuristic cyan framing highlights to ground the card visually */}
-          <div className="absolute top-2 left-2 w-1.5 h-1.5 border-t border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          <div className="absolute top-2 right-2 w-1.5 h-1.5 border-t border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          <div className="absolute bottom-2 left-2 w-1.5 h-1.5 border-b border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          <div className="absolute bottom-2 right-2 w-1.5 h-1.5 border-b border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          
-          <div className="flex items-center gap-3 mb-6">
-            <Server className="w-5 h-5 text-[#00d1ff]" />
-            <h3 className="font-display font-semibold text-lg text-white uppercase tracking-wider">Frameworks & Tooling</h3>
-          </div>
-          
-          <motion.div 
-            className="flex flex-wrap gap-2.5"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {technicalSkills.frameworks_and_tools.map((fwork) => (
-              <motion.span
-                key={fwork}
-                variants={itemVariants}
-                className="px-3.5 py-1.5 bg-[#151515]/80 border border-white/5 text-xs text-on-surface hover:border-[#00d1ff]/20 rounded-xl font-mono tracking-wider transition-colors inline-block"
-              >
-                {fwork}
-              </motion.span>
-            ))}
-          </motion.div>
+          return (
+            <motion.div
+              key={category.key}
+              className={`${skillCategorySpan[category.key]} bg-[#0a0a0d] border border-white/15 hover:border-[#00d1ff]/80 focus-within:border-[#00d1ff]/80 p-6 sm:p-8 rounded-xl relative overflow-hidden group hover:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] focus-within:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] transition-all duration-300 shadow-2xl outline-none`}
+              variants={cardEntryVariants}
+            >
+              <div className="absolute top-2 left-2 w-1.5 h-1.5 border-t border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
+              <div className="absolute top-2 right-2 w-1.5 h-1.5 border-t border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
+              <div className="absolute bottom-2 left-2 w-1.5 h-1.5 border-b border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
+              <div className="absolute bottom-2 right-2 w-1.5 h-1.5 border-b border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
 
-          <p className="font-sans text-xs text-gray-400 mt-8 leading-relaxed">
-            Deep alignment with SSR/SSG, NestJS microservices, JWT/RBAC auth, and type-safe Prisma data layers.
-          </p>
-        </motion.div>
-
-        {/* Bento box 3: Databases (6 cols) */}
-        <motion.div 
-          className="md:col-span-6 bg-[#0a0a0d] border border-white/15 hover:border-[#00d1ff]/80 focus-within:border-[#00d1ff]/80 p-8 rounded-xl relative overflow-hidden group hover:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] focus-within:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] transition-all duration-300 shadow-2xl outline-none"
-          variants={cardEntryVariants}
-        >
-          {/* Futuristic cyan framing highlights to ground the card visually */}
-          <div className="absolute top-2 left-2 w-1.5 h-1.5 border-t border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          <div className="absolute top-2 right-2 w-1.5 h-1.5 border-t border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          <div className="absolute bottom-2 left-2 w-1.5 h-1.5 border-b border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          <div className="absolute bottom-2 right-2 w-1.5 h-1.5 border-b border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          
-          <div className="flex items-center gap-3 mb-6">
-            <Database className="w-5 h-5 text-[#00d1ff]" />
-            <h3 className="font-display font-semibold text-lg text-white uppercase tracking-wider">Databases & Architecture</h3>
-          </div>
-
-          <div className="space-y-3.5">
-            {technicalSkills.databases.map((db) => {
-              const labelByDb: Record<string, string> = {
-                PostgreSQL: "Production SQL",
-                MySQL: "Relational SQL",
-                MongoDB: "NoSQL Core",
-                Redis: "In-Memory Cache",
-                "Prisma ORM": "Type-Safe ORM",
-              };
-              return (
-                <div key={db} className="flex justify-between items-center border-b border-white/5 pb-2 last:border-b-0">
-                  <span className="font-sans text-sm text-white font-medium">{db}</span>
-                  <span className="font-mono text-[10px] text-[#00d1ff] uppercase tracking-wider">
-                    {labelByDb[db] || "Core"}
-                  </span>
-                </div>
-              );
-            })}
-            {technicalSkills.other.slice(0, 2).map((tech) => (
-              <div key={tech} className="flex justify-between items-center border-b border-white/5 pb-2 last:border-b-0">
-                <span className="font-sans text-sm text-white/70">{tech}</span>
-                <span className="font-mono text-[10px] text-gray-500 uppercase">Platform</span>
+              <div className="flex items-center gap-3 mb-5">
+                <Icon className="w-5 h-5 text-[#00d1ff] shrink-0" />
+                <h3 className="font-display font-semibold text-base sm:text-lg text-white uppercase tracking-wider">
+                  {category.title}
+                </h3>
               </div>
-            ))}
-          </div>
-        </motion.div>
 
-        {/* Bento box 4: Cloud & DevOps (6 cols) */}
-        <motion.div 
-          className="md:col-span-6 bg-[#0a0a0d] border border-white/15 hover:border-[#00d1ff]/80 focus-within:border-[#00d1ff]/80 p-8 rounded-xl relative overflow-hidden group hover:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] focus-within:shadow-[0_0_20px_rgba(0,209,255,0.22),0_25px_60px_rgba(0,209,255,0.15)] transition-all duration-300 shadow-2xl outline-none"
-          variants={cardEntryVariants}
-        >
-          {/* Futuristic cyan framing highlights to ground the card visually */}
-          <div className="absolute top-2 left-2 w-1.5 h-1.5 border-t border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          <div className="absolute top-2 right-2 w-1.5 h-1.5 border-t border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          <div className="absolute bottom-2 left-2 w-1.5 h-1.5 border-b border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          <div className="absolute bottom-2 right-2 w-1.5 h-1.5 border-b border-r border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
-          
-          <div className="flex items-center gap-3 mb-6">
-            <Cloud className="w-5 h-5 text-[#00d1ff]" />
-            <h3 className="font-display font-semibold text-lg text-white uppercase tracking-wider">Ops & Environment</h3>
-          </div>
-
-          <motion.div 
-            className="flex flex-wrap gap-2.5"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {technicalSkills.devops_and_cloud.map((cloud) => (
-              <motion.span
-                key={cloud}
-                variants={itemVariants}
-                className="px-3.5 py-1.5 bg-[#151515]/80 border border-white/5 text-xs text-on-surface hover:border-[#00d1ff]/20 rounded-xl font-mono tracking-wider transition-colors inline-block"
+              <motion.div
+                className="flex flex-wrap gap-2.5"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
               >
-                {cloud}
-              </motion.span>
-            ))}
-          </motion.div>
+                {skills.map((skill) => (
+                  <motion.span
+                    key={skill}
+                    variants={itemVariants}
+                    className="px-3.5 py-1.5 bg-[#151515]/80 border border-white/5 text-xs text-on-surface hover:border-[#00d1ff]/40 hover:text-white rounded-xl font-mono tracking-wider transition-colors inline-block"
+                  >
+                    {skill}
+                  </motion.span>
+                ))}
+              </motion.div>
 
-          <p className="font-sans text-xs text-gray-400 mt-6 leading-relaxed">
-            Deploying on AWS EC2 with Docker, Nginx reverse proxies, PM2 process management, and automated GitHub Actions CI/CD pipelines.
-          </p>
-        </motion.div>
-
+              <p className="font-sans text-xs text-gray-400 mt-6 leading-relaxed">
+                {category.description}
+              </p>
+            </motion.div>
+          );
+        })}
       </motion.div>
 
       {/* SUB-SECTION: LIVE GITHUB METRICS */}
@@ -483,7 +392,7 @@ export default function FoundationSect() {
         variants={cardEntryVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, amount: 0.12 }}
       >
         {/* Futuristic cyan framing highlights */}
         <div className="absolute top-2 left-2 w-1.5 h-1.5 border-t border-l border-[#00d1ff]/40 group-hover:border-[#00d1ff]/90 group-hover:shadow-[0_0_8px_rgba(0,209,255,0.6)] transition-all duration-300 pointer-events-none" aria-hidden="true" />
@@ -600,20 +509,20 @@ export default function FoundationSect() {
                   ref={heatmapContainerRef} 
                   className="bg-[#121217]/40 border border-white/5 p-6 rounded-xl hover:border-[#00d1ff]/50 transition-all relative overflow-hidden"
                   variants={{
-                    hidden: { opacity: 0, y: 25 },
+                    hidden: { opacity: 0, y: 16 },
                     visible: {
                       opacity: 1,
                       y: 0,
                       transition: {
-                        duration: 0.6,
+                        duration: 0.45,
                         ease: "easeOut",
-                        staggerChildren: 0.005, // smooth cascading stagger to nested children
+                        staggerChildren: 0.005,
                       }
                     }
                   }}
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{ once: true, margin: "-100px" }}
+                  viewport={{ once: true, amount: 0.12 }}
                 >
                   
                   {/* GLOWING NEON CYBERPUNK LOADING OVERLAY */}
@@ -692,7 +601,7 @@ export default function FoundationSect() {
                           }}
                           initial="hidden"
                           whileInView="visible"
-                          viewport={{ once: true, margin: "-40px" }}
+                          viewport={{ once: true, amount: 0.12 }}
                         >
                           {buildContributionWeeks().map((week, wIdx) => (
                             <motion.div 
@@ -817,7 +726,7 @@ export default function FoundationSect() {
         variants={staggeredContainerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, amount: 0.12 }}
       >
         
         {/* Education list bento */}

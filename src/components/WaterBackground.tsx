@@ -253,6 +253,9 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
     // Keep active mouse trails
     const handleCanvasMouseMove = (e: MouseEvent) => {
       mousePosRef.current = { x: e.clientX, y: e.clientY };
+      // Skip expensive trail particles while reading content sections.
+      if (activeSectionRef.current > 0) return;
+
       const now = performance.now();
       const last = lastMousePosRef.current;
 
@@ -312,8 +315,18 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
       });
     }
 
-    // DRAW ENGINE LOOP Runs at 60 FPS
+    // DRAW ENGINE LOOP — full rate on portal, throttled while scrolling content
+    // so section paint isn't competing with a constant 60fps canvas.
+    let frameCount = 0;
     const render = () => {
+      frameCount += 1;
+      const sIndex = activeSectionRef.current;
+      // Off-portal: run every 3rd frame (~20fps). Skip work when idle.
+      if (sIndex > 0 && frameCount % 3 !== 0) {
+        animationFrameId = requestAnimationFrame(render);
+        return;
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // 1. Render Cinematic Cyberocean Ocean Bed Gradient Background
@@ -321,7 +334,6 @@ export default function WaterBackground({ activeSection, localHours }: WaterBack
       let oceanColor1 = activeThemeRef.current.oceanColor1; // Deep dark space coordinates
       let oceanColor2 = activeThemeRef.current.oceanColor2Base; // Indigo oceanic floor
       
-      const sIndex = activeSectionRef.current;
       if (sIndex >= 1 && sIndex <= 5) {
         oceanColor2 = activeThemeRef.current.oceanColor2Overlays[sIndex - 1];
       }

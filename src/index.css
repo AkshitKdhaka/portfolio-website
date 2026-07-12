@@ -67,7 +67,9 @@ html, body {
 }
 
 .snap-section {
-  /* Removed scroll snap for ultra-fluid native scroll momentum */
+  /* Hint the browser to skip offscreen layout/paint work while scrolling */
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 900px;
 }
 
 /* Scrollbar styles */

@@ -41,44 +41,34 @@ export default function App() {
   const [webGlSupported, setWebGlSupported] = useState(true);
   const [isSynthPlaying, setIsSynthPlaying] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [localHours, setLocalHours] = useState(0);
-  const [localTimeStr, setLocalTimeStr] = useState('');
-  const [timeProfile, setTimeProfile] = useState('MIDNIGHT_NEBULA');
+  const [localHours, setLocalHours] = useState(() => new Date().getHours());
 
-  // Unified clock mechanism for real-time local time tracking and theme alignment
+  // Only update when the hour changes — avoids re-rendering the whole app every second.
   useEffect(() => {
-    const updateTime = () => {
-      const date = new Date();
-      const hour = date.getHours();
-      setLocalHours(hour);
-
-      const formatField = (num: number) => num.toString().padStart(2, '0');
-      const timeString = `${formatField(hour)}:${formatField(date.getMinutes())}:${formatField(date.getSeconds())}`;
-      setLocalTimeStr(timeString);
-
-      if (hour >= 5 && hour < 11) {
-        setTimeProfile('DAWN_SUNRISE');
-      } else if (hour >= 11 && hour < 17) {
-        setTimeProfile('OCEAN_OCEANIC');
-      } else if (hour >= 17 && hour < 21) {
-        setTimeProfile('SUNSET_TWILIGHT');
-      } else {
-        setTimeProfile('MIDNIGHT_NEBULA');
-      }
+    const syncHour = () => {
+      const hour = new Date().getHours();
+      setLocalHours((prev) => (prev !== hour ? hour : prev));
     };
-
-    updateTime();
-    const timerId = setInterval(updateTime, 1000);
+    syncHour();
+    const timerId = setInterval(syncHour, 60_000);
     return () => clearInterval(timerId);
   }, []);
 
   // Ref tracking previous scroll position to selectively trigger sound transitions
   const prevSectionRef = useRef<number>(0);
+  const isSynthPlayingRef = useRef(false);
+
+  useEffect(() => {
+    isSynthPlayingRef.current = isSynthPlaying;
+  }, [isSynthPlaying]);
 
   useEffect(() => {
     if (activeSection !== prevSectionRef.current) {
-      ambientSynth.playTransitionSound();
-      ambientSynth.playClickPingSound();
+      // Only play transition cues when ambient audio is intentionally on.
+      if (isSynthPlayingRef.current) {
+        ambientSynth.playTransitionSound();
+        ambientSynth.playClickPingSound();
+      }
       prevSectionRef.current = activeSection;
     }
   }, [activeSection]);
@@ -203,25 +193,29 @@ export default function App() {
   // easing with a distance-aware duration and cancels cleanly if interrupted.
   const scrollAnimRef = useRef<number | null>(null);
 
-  const smoothScrollTo = (targetY: number) => {
+  const cancelSmoothScroll = () => {
     if (scrollAnimRef.current !== null) {
       cancelAnimationFrame(scrollAnimRef.current);
+      scrollAnimRef.current = null;
     }
+  };
+
+  const smoothScrollTo = (targetY: number) => {
+    cancelSmoothScroll();
 
     const startY = window.scrollY;
     const distance = targetY - startY;
     if (Math.abs(distance) < 2) return;
 
     // Scale duration with distance, clamped for snappy-yet-smooth feel.
-    const duration = Math.min(Math.max(Math.abs(distance) / 2.2, 550), 1150);
-    const easeInOutCubic = (t: number) =>
-      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const duration = Math.min(Math.max(Math.abs(distance) / 2.8, 420), 900);
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
     let startTime: number | null = null;
     const step = (now: number) => {
       if (startTime === null) startTime = now;
       const progress = Math.min((now - startTime) / duration, 1);
-      window.scrollTo(0, startY + distance * easeInOutCubic(progress));
+      window.scrollTo(0, startY + distance * easeOutCubic(progress));
       if (progress < 1) {
         scrollAnimRef.current = requestAnimationFrame(step);
       } else {
@@ -230,6 +224,19 @@ export default function App() {
     };
     scrollAnimRef.current = requestAnimationFrame(step);
   };
+
+  // If the user scrolls manually (wheel/touch), stop any scripted tween so
+  // native scroll momentum isn't fighting the animation.
+  useEffect(() => {
+    const interrupt = () => cancelSmoothScroll();
+    window.addEventListener('wheel', interrupt, { passive: true });
+    window.addEventListener('touchstart', interrupt, { passive: true });
+    return () => {
+      window.removeEventListener('wheel', interrupt);
+      window.removeEventListener('touchstart', interrupt);
+      cancelSmoothScroll();
+    };
+  }, []);
 
   // Smooth scroll helper
   const scrollToRef = (ref: React.RefObject<HTMLDivElement | null>) => {
@@ -378,8 +385,8 @@ export default function App() {
         </div>
       </header>
 
-      {/* Floating Storyline HUD Progress Sidebar Dashboard - Fades in past portal screen */}
-      <nav className={`fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col gap-6 select-none bg-[#0f0f0f]/35 backdrop-blur-md p-4 rounded-3xl border border-white/5 shadow-2xl transition-all duration-700 ease-in-out ${
+      {/* Floating Storyline HUD Progress Sidebar — only on wide screens so it never covers content */}
+      <nav className={`fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden min-[1490px]:flex flex-col gap-6 select-none bg-[#0f0f0f]/35 backdrop-blur-md p-4 rounded-3xl border border-white/5 shadow-2xl transition-all duration-700 ease-in-out ${
         activeSection > 0 ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-4 pointer-events-none'
       }`}>
         {navItems.map((item) => {
@@ -631,69 +638,49 @@ export default function App() {
         </div>
 
         {/* Section 1: Journey (Career Timeline) */}
-        <motion.div 
-          id="journey" 
-          ref={journeyRef} 
+        <div
+          id="journey"
+          ref={journeyRef}
           className="min-h-screen flex items-center justify-center py-20 snap-section"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
         >
           <JourneySect />
-        </motion.div>
+        </div>
 
         {/* Section 2: Workshop (Projects Portfolio) */}
-        <motion.div 
-          id="projects" 
-          ref={workshopRef} 
+        <div
+          id="projects"
+          ref={workshopRef}
           className="min-h-screen flex items-center justify-center py-20 snap-section"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
         >
           <WorkshopSect />
-        </motion.div>
+        </div>
 
         {/* Section 3: Foundation (Skills & Credentials Bento Box) */}
-        <motion.div 
-          id="foundation" 
-          ref={foundationRef} 
+        <div
+          id="foundation"
+          ref={foundationRef}
           className="min-h-screen flex items-center justify-center py-20 snap-section"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
         >
           <FoundationSect />
-        </motion.div>
+        </div>
 
         {/* Section 4: AI Co-pilot & Recruiter Suite */}
-        <motion.div 
-          id="ai-copilot" 
-          ref={aiCopilotRef} 
+        <div
+          id="ai-copilot"
+          ref={aiCopilotRef}
           className="min-h-screen flex items-center justify-center py-20 snap-section"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
         >
           <AiCopilotSect />
-        </motion.div>
+        </div>
 
         {/* Section 5: Secure Handshake & Footer */}
-        <motion.div 
-          id="contact" 
-          ref={contactRef} 
+        <div
+          id="contact"
+          ref={contactRef}
           className="min-h-screen flex items-center justify-center bg-gradient-to-b from-transparent to-[#010f1f]/80 py-20 snap-section"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
         >
           <InteractiveFooter />
-        </motion.div>
+        </div>
       </main>
 
       {/* Floating Scroll to Top button */}
