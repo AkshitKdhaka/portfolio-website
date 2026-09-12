@@ -60,7 +60,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           # Build on a small instance can take a while; allow extra time.
-          command_timeout: 40m
+          command_timeout: 50m
 
           script: |
             set -euo pipefail
