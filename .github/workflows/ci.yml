@@ -27,6 +27,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -60,6 +61,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           # Build on a small instance can take a while; allow extra time.
           command_timeout: 20m
+
           script: |
             set -euo pipefail
             cd ~/portfolio-website
@@ -67,7 +69,7 @@ jobs:
             echo "==> Disk before cleanup"
             df -h /
 
-            # Aggressive free-space pass for small EC2 root volumes (~6–8GB).
+            # Aggressive free-space pass for small EC2 root volumes.
             # node_modules alone is usually ~700–800MB and must go before npm ci.
             rm -rf .next node_modules
             rm -rf "$HOME/.npm" /tmp/next-* /tmp/npm-* || true
@@ -89,11 +91,12 @@ jobs:
             echo "==> Disk after cleanup"
             df -h /
 
-            # Need headroom for npm ci + next build peak (~1.2GB free preferred).
+            # Need headroom for npm ci + next build peak.
+            # The EBS root volume has now been expanded to 12GB.
             avail_kb=$(df -Pk / | awk 'NR==2 {print $4}')
             if [ "$avail_kb" -lt 1228800 ]; then
               echo "ERROR: Only ${avail_kb}KB free on deploy volume — need at least ~1.2GB."
-              echo "Expand the EBS root volume (recommend 20GB) or free more space manually."
+              echo "Expand the EBS root volume or free more space manually."
               df -h /
               du -xh --max-depth=1 "$HOME" /var /usr 2>/dev/null | sort -h | tail -n 20 || true
               exit 1
@@ -101,19 +104,49 @@ jobs:
 
             git fetch --all
             git reset --hard origin/main
+
             npm ci
 
             # Raise Node's heap limit so the build has headroom (backed by swap
             # on small instances). Type-checking is skipped via next.config.ts.
             export NODE_OPTIONS="--max-old-space-size=2048"
             export NEXT_TELEMETRY_DISABLED=1
+
             npm run build
 
             # DevDependencies are only needed for build; drop them so the next
             # deploy starts with more free disk.
             npm prune --omit=dev
 
-            pm2 restart portfolio --update-env
+            # Start the application if the PM2 process does not exist.
+            # Otherwise restart the existing process with updated environment variables.
+            if pm2 describe portfolio >/dev/null 2>&1; then
+              echo "==> PM2 process 'portfolio' exists — restarting"
+              pm2 restart portfolio --update-env
+            else
+              echo "==> PM2 process 'portfolio' does not exist — starting"
+              pm2 start npm --name portfolio -- start
+            fi
+
+            # Save the PM2 process list so the application can be restored after
+            # an EC2/server reboot.
+            pm2 save
+
+            echo "==> PM2 status"
+            pm2 status
+
+            # Verify that the Next.js application is responding on port 3000.
+            echo "==> Testing application on port 3000"
+            sleep 3
+
+            if ! curl -f --max-time 15 http://127.0.0.1:3000 >/dev/null; then
+              echo "ERROR: Application is not responding on port 3000."
+              echo "==> PM2 logs"
+              pm2 logs portfolio --lines 50 --nostream || true
+              exit 1
+            fi
+
+            echo "==> Application is responding successfully"
 
             echo "==> Disk after deploy"
             df -h /
