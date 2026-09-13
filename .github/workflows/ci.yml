@@ -59,26 +59,38 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+
           # Build on a small instance can take a while; allow extra time.
-          command_timeout: 20m
+          # The EC2 build currently takes around 12 minutes, while npm ci
+          # can take several minutes, so 40 minutes gives the deployment
+          # enough time to complete without an SSH timeout.
+          command_timeout: 40m
 
           script: |
             set -euo pipefail
+
             cd ~/portfolio-website
+
+            echo "========================================"
+            echo "==> Starting deployment"
+            echo "========================================"
 
             echo "==> Disk before cleanup"
             df -h /
 
-            # Aggressive free-space pass for small EC2 root volumes.
+            # Aggressive free-space pass for small EC2 root volumes (~12GB).
             # node_modules alone is usually ~700–800MB and must go before npm ci.
             rm -rf .next node_modules
+
             rm -rf "$HOME/.npm" /tmp/next-* /tmp/npm-* || true
+
             npm cache clean --force || true
 
             # System caches (safe; no password prompt on typical EC2 ubuntu).
             sudo apt-get clean || true
             sudo apt-get autoremove -y || true
             sudo rm -rf /var/cache/apt/archives/*.deb || true
+
             sudo journalctl --vacuum-size=50M || true
 
             # Drop disabled snap revisions (common Ubuntu bloat).
@@ -91,62 +103,146 @@ jobs:
             echo "==> Disk after cleanup"
             df -h /
 
-            # Need headroom for npm ci + next build peak.
-            # The EBS root volume has now been expanded to 12GB.
+            # Need headroom for npm ci + next build peak (~1.2GB free preferred).
             avail_kb=$(df -Pk / | awk 'NR==2 {print $4}')
+
             if [ "$avail_kb" -lt 1228800 ]; then
               echo "ERROR: Only ${avail_kb}KB free on deploy volume — need at least ~1.2GB."
-              echo "Expand the EBS root volume or free more space manually."
+              echo "Expand the EBS root volume (recommend 20GB) or free more space manually."
               df -h /
+
+              echo "==> Largest directories:"
               du -xh --max-depth=1 "$HOME" /var /usr 2>/dev/null | sort -h | tail -n 20 || true
+
               exit 1
             fi
 
+            echo "==> Updating source code"
+
             git fetch --all
+
             git reset --hard origin/main
 
+            echo "==> Current commit:"
+            git log -1 --oneline
+
+            echo "==> Installing dependencies"
+
             npm ci
+
+            echo "==> Dependencies installed"
 
             # Raise Node's heap limit so the build has headroom (backed by swap
             # on small instances). Type-checking is skipped via next.config.ts.
             export NODE_OPTIONS="--max-old-space-size=2048"
             export NEXT_TELEMETRY_DISABLED=1
 
+            echo "==> Building Next.js application"
+
             npm run build
 
-            # DevDependencies are only needed for build; drop them so the next
-            # deploy starts with more free disk.
-            npm prune --omit=dev
+            echo "==> Next.js build completed successfully"
 
-            # Start the application if the PM2 process does not exist.
-            # Otherwise restart the existing process with updated environment variables.
+            # IMPORTANT:
+            # Do NOT run `npm prune --omit=dev` here.
+            #
+            # The project uses next.config.ts, and Next.js requires TypeScript
+            # when loading the TypeScript configuration at application startup.
+            #
+            # Removing devDependencies causes TypeScript to disappear and
+            # Next.js then attempts to reinstall it when PM2 starts the app.
+            #
+            # Keeping the dependencies installed makes the production startup
+            # predictable and prevents the application from failing on port 3000.
+
+            echo "==> Starting/restarting PM2 application"
+
             if pm2 describe portfolio >/dev/null 2>&1; then
               echo "==> PM2 process 'portfolio' exists — restarting"
+
               pm2 restart portfolio --update-env
             else
               echo "==> PM2 process 'portfolio' does not exist — starting"
+
               pm2 start npm --name portfolio -- start
             fi
 
-            # Save the PM2 process list so the application can be restored after
-            # an EC2/server reboot.
+            # Save the current PM2 process list so the application can be
+            # restored automatically after a server restart/reboot.
             pm2 save
 
+            echo "==> PM2 process started/restarted"
+
             echo "==> PM2 status"
+
             pm2 status
 
-            # Verify that the Next.js application is responding on port 3000.
+            echo "========================================"
             echo "==> Testing application on port 3000"
-            sleep 3
+            echo "========================================"
 
-            if ! curl -f --max-time 15 http://127.0.0.1:3000 >/dev/null; then
-              echo "ERROR: Application is not responding on port 3000."
+            # Give Next.js enough time to start.
+            #
+            # The EC2 instance is relatively small and the application can
+            # sometimes take several seconds to become available after PM2
+            # restarts. Instead of checking only once after 3 seconds, retry
+            # for up to 60 seconds.
+            app_ready=false
+
+            for i in {1..12}; do
+
+              if curl -f --max-time 10 http://127.0.0.1:3000 >/dev/null; then
+                echo "==> Application is responding on port 3000"
+
+                app_ready=true
+
+                break
+              fi
+
+              echo "==> Application is not ready yet..."
+              echo "==> Waiting 5 seconds before retry ($i/12)"
+
+              sleep 5
+
+            done
+
+            if [ "$app_ready" != "true" ]; then
+
+              echo "========================================"
+              echo "ERROR: Application did not become ready"
+              echo "========================================"
+
+              echo "==> PM2 status"
+
+              pm2 status
+
+              echo "==> PM2 application information"
+
+              pm2 describe portfolio || true
+
               echo "==> PM2 logs"
+
               pm2 logs portfolio --lines 50 --nostream || true
+
+              echo "==> Checking port 3000"
+
+              ss -lntp | grep ':3000' || true
+
               exit 1
             fi
 
-            echo "==> Application is responding successfully"
+            echo "========================================"
+            echo "==> Application health check passed"
+            echo "========================================"
+
+            echo "==> Final PM2 status"
+
+            pm2 status
 
             echo "==> Disk after deploy"
+
             df -h /
+
+            echo "========================================"
+            echo "==> Deployment completed successfully"
+            echo "========================================"
