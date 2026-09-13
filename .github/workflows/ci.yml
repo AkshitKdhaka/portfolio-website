@@ -61,10 +61,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
 
           # Build on a small instance can take a while; allow extra time.
-          # The EC2 build currently takes around 12 minutes, while npm ci
-          # can take several minutes, so 40 minutes gives the deployment
-          # enough time to complete without an SSH timeout.
-          command_timeout: 40m
+          command_timeout: 50m
 
           script: |
             set -euo pipefail
